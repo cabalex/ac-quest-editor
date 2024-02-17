@@ -4,10 +4,10 @@
     import extract, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
     import extract_partial from "../_lib/files/PKZ/extract_partial";
     import PlatinumFileReader from "../_lib/files/PlatinumFileReader";
-    import { IconFile, IconSearch } from "@tabler/icons-svelte";
+    import { IconExclamationCircle, IconFile, IconSearch } from "@tabler/icons-svelte";
     import Loading from "../assets/Loading.svelte";
     import { questsCache } from "../store";
-  import { lookup } from "../_lib/lookupTable";
+    import { lookup } from "../_lib/lookupTable";
 
     export let onClick: (quest: {name: string, arrayBuffer: ArrayBuffer}) => void;
 
@@ -34,6 +34,13 @@
         sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
         return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
+    }
+
+    async function openAll() {
+        if (fileData == null) return;
+        for (let file of fileData.files) {
+            await clickFile(file);
+        }
     }
 
 
@@ -70,6 +77,10 @@
             </div>
         </button>
     </VirtualList>
+    <button class="transparentBtn" style="color: var(--danger)" on:click={openAll}>
+        <IconExclamationCircle />
+        Open all (dangerous)
+    </button>
 {:else}
     <div class="loading">
         <Loading style="margin-bottom: 275px" />

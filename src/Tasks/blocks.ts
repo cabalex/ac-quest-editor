@@ -170,7 +170,7 @@ export const ifBlocks = [
     ifDefine("if-4", "If Flag %1 of quest %2 is %3", [
         {
             "type": "input_dummy",
-            "name": "IFFlagNo",
+            "name": "IFFlagNo_dummy",
         },
         {
             "type": "field_input",
@@ -198,7 +198,7 @@ export const ifBlocks = [
     ifDefine("if-7", "If Flag %1 of quest %2 is %3", [
         {
             "type": "input_dummy",
-            "name": "IFFlagNo"
+            "name": "IFFlagNo_dummy"
         },
         {
             "type": "field_number",
@@ -340,6 +340,21 @@ export const ifBlocks = [
         trueFalse("IfbCheck", "done", "not done")]
     ),
 
+    ifDefine("if-20", "If score on Quest %1 %2 %3", [
+        {
+            "type": "field_input",
+            "name": "IfSubQuestCompQuestId",
+            "text": "0000"
+        },
+        ifCommand("IfCondition"),
+        {
+            "type": "field_number",
+            "name": "IfSubQuestCompScore",
+            "value": 0,
+            "min": 0
+        }]
+    ),
+
     ifDefine("if-22", "If dialogue box %1", [
         trueFalse("IFbCheck", "closed", "open")]
     ),
@@ -359,7 +374,7 @@ export const ifBlocks = [
     ifDefine("if-28", "If SaveFlag %1 of quest %2 is %3", [
         {
             "type": "input_dummy",
-            "name": "IFFlagNo"
+            "name": "IFFlagNo_dummy"
         },
         {
             "type": "field_number",
@@ -501,9 +516,9 @@ export const execBlocks = [
         },
         trueFalse("EXECEventExecUseBeginFade", "enabled", "disabled", false),
         {
-            "type": "field_input",
+            "type": "field_colour",
             "name": "EXECEventExecBeginFadeColor",
-            "text": "FF000000"
+            "value": "0xFF000000"
         },
         {
             "type": "field_number",
@@ -513,9 +528,9 @@ export const execBlocks = [
         trueFalse("EXECEventExecUseEndFade", "enabled", "disabled", false),
         trueFalse("EXECEventExecEndFadeCanFadeIn"), // usually true first
         {
-            "type": "field_input",
+            "type": "field_colour",
             "name": "EXECEventExecEndFadeColor",
-            "text": "FF000000"
+            "value": "0xFF000000"
         },
         {
             "type": "field_number",
@@ -581,7 +596,7 @@ export const execBlocks = [
     execDefine("exec-9", "Set Flag %1 to %2", [
         {
             "type": "input_dummy",
-            "name": "ExecFlagNo",
+            "name": "ExecFlagNo_dummy",
         },
         trueFalse("ExecbCheck")
     ], ["questflag"]),
@@ -610,7 +625,7 @@ export const execBlocks = [
     execDefine("exec-12", "Set Flag %1 to %2", [
         {
             "type": "input_dummy",
-            "name": "ExecFlagNo",
+            "name": "ExecFlagNo_dummy",
         },
         trueFalse("ExecbCheck")
     ], ["questflag"]),,
@@ -638,9 +653,9 @@ export const execBlocks = [
         },
         trueFalse("ExecUseFade"),
         {
-            "type": "field_input",
+            "type": "field_colour",
             "name": "ExecFadeColor",
-            "text": "0000"
+            "value": "0000"
         },
     ]),
     execDefine("exec-16", "Load New Area Data from Quest %1, PhaseNo %2, SubPhaseIndex %3 (POS %4, %5, %6, %7deg), LoadingType %8 (IsSet %9, IsCountUp %10)", [
@@ -712,7 +727,7 @@ export const execBlocks = [
         }
     ]),
 
-    execDefine("exec-20", "Set counter at Hash %1 to %2 (counter type %3)", [
+    execDefine("exec-20", "Set counter at Hash %1 to %2 [0 = increment.] (counter type %3)", [
         {
             "type": "field_input",
             "name": "ExecCounterHash",
@@ -962,16 +977,16 @@ export const execBlocks = [
         },
         trueFalse("bKeyStop"),
         {
-            "type": "field_input",
+            "type": "field_colour",
             "name": "Color",
-            "text": "0000"
+            "value": "0000"
         },
     ]),
     execDefine("exec-48", "End Fade", []),
     execDefine("exec-49", "Set SaveFlag %1 to %2", [
         {
             "type": "input_dummy",
-            "name": "ExecFlagNo",
+            "name": "ExecFlagNo_dummy",
         },
         trueFalse("ExecbCheck")
     ], ["saveflag"]),
@@ -1144,10 +1159,15 @@ export const toolbox = `<xml id="toolbox" style="display: none">` +
     `</xml>`;
 
 
+function fallbackOptions() {
+    for (let i = 0; i < 64; i++) {
+        options.push([`(${i}) ${i}`, i.toString()])
+    }
+}
 
 // EXTENSIONS
 Blockly.Extensions.register('questflag', function() {
-    (this.getInput('ExecFlagNo') || this.getInput('IFFlagNo')).appendField(
+    (this.getInput('ExecFlagNo_dummy') || this.getInput('IFFlagNo_dummy')).appendField(
         new Blockly.FieldDropdown(() => {
             let ses = get(session);
             if (!ses) return [];
@@ -1157,22 +1177,23 @@ Blockly.Extensions.register('questflag', function() {
             }
             return options;
         }),
-        !!this.getInput('IFFlagNo') ? 'IFFlagNo' : 'ExecFlagNo'
+        !!this.getInput('IFFlagNo_dummy') ? 'IFFlagNo' : 'ExecFlagNo'
     );
     this.setInputsInline(true);
 });
 
 Blockly.Extensions.register('saveflag', function() {
-    if (this.getInput('IFFlagNo') && this.getInput('IFQuestId') != 0) {
-        // generic all flags
-        let options = [];
-        for (let i = 0; i < 64; i++) {
-            options.push([`(${i}) ${i}`, i.toString()])
-        }
-        return options;
-    }
-    (this.getInput('ExecFlagNo') || this.getInput('IFFlagNo')).appendField(
+    (this.getInput('ExecFlagNo_dummy') || this.getInput('IFFlagNo_dummy')).appendField(
         new Blockly.FieldDropdown(() => {
+            if (this.getInput('IFFlagNo_dummy') && this.getInput('IFQuestId') != 0) {
+                // generic all flags
+                let options = [];
+                for (let i = 0; i < 64; i++) {
+                    options.push([`(${i}) ${i}`, i.toString()])
+                }
+                return options;
+            }
+            
             let ses = get(session);
             if (!ses) return [];
             let options = [];
@@ -1181,7 +1202,7 @@ Blockly.Extensions.register('saveflag', function() {
             }
             return options;
         }),
-        !!this.getInput('IFFlagNo') ? 'IFFlagNo' : 'ExecFlagNo'
+        !!this.getInput('IFFlagNo_dummy') ? 'IFFlagNo' : 'ExecFlagNo'
     );
     this.setInputsInline(true);
 });

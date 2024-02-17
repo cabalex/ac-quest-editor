@@ -28,10 +28,12 @@
         <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
             <IconCaretRightFilled />
         </button>
-        {#if task.enabled}
-            <IconCodeDots />
-        {:else}
+        {#if !task.enabled}
             <IconCodeAsterix color="var(--danger)" />
+        {:else if task.workInAdvance}
+            <IconCodePlus color="var(--primary-300)" />
+        {:else}
+            <IconCodeDots />
         {/if}
         <div class="text">
             <h3 translate="yes">{task.name}</h3>
@@ -50,7 +52,7 @@
         />
         <BoolInput
             label="Runs in advance"
-            description="If enabled, the first LineList will run every frame."
+            description="Prioritizes this script over regular scripts."
             bind:value={task.workInAdvance}
         />
         <TextInput

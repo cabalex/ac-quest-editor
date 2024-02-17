@@ -289,7 +289,6 @@ export class Area {
         this.index = parseInt(node.attributes["GroupIndex"]);
         this.name = node.attributes["GroupName"];
         this.debugDisplay = node.attributes["GroupDebugDisp"] == "1";
-        console.log(node);
         this.groups = node.children.map((child: Node) => new AreaGroup(child));
     }
 

@@ -50,6 +50,7 @@
             for (let field of elem.querySelectorAll("field")) {
                 let name = field.getAttribute('name');
                 let value = field.textContent;
+                if (blockIds)
                 /*if (questShouldHex(field.getAttribute('name'))) {
                     fieldvalue = parseInt(fieldvalue, 16);
                 }*/
@@ -58,9 +59,15 @@
                 }
 
                 if (typeIF !== 0) {
-                    IFArgs[name] = value.toString();
+                    if (ifBlocks.find(b => b.type === `if-${typeIF}`)?.args0.find((f: any) => f.name === name)?.type === "field_input") {
+                        value = parseInt(value || "0", 16).toString();
+                    }
+                    IFArgs[name] = value?.toString();
                 } else {
-                    EXECArgs[name] = value.toString();
+                    if (execBlocks.find(b => b.type === `exec-${typeIF}`)?.args0.find((f: any) => f.name === name)?.type === "field_input") {
+                        value = parseInt(value || "0", 16).toString();
+                    }
+                    EXECArgs[name] = value?.toString();
                 }
             }
 
@@ -152,7 +159,10 @@
                 if (Object.keys(blockIds).includes("if-" + command.typeIF)) {
                     // Known IF
                     xml += `<block type="if-${command.typeIF}">`
-                    for (const [key, value] of Object.entries(command.IFArgs)) {
+                    for (let [key, value] of Object.entries(command.IFArgs)) {
+                        if (ifBlocks.find(b => b.type === `if-${command.typeIF}`)?.args0.find((f: any) => f.name === key)?.type === "field_input") {
+                            value = parseInt(value).toString(16);
+                        }
                         if (command.typeEXEC < 2 && !key.toLowerCase().startsWith('if')) {
                             xml += `<field name="IF${key}">${value}</field>`;
                         } else {
@@ -170,7 +180,10 @@
 
                 if (Object.keys(blockIds).includes("exec-" + command.typeEXEC)) {
                     xml += `<block type="exec-${command.typeEXEC}">`
-                    for (const [key, value] of Object.entries(command.EXECArgs)) {
+                    for (let [key, value] of Object.entries(command.EXECArgs)) {
+                        if (execBlocks.find(b => b?.type === `exec-${command.typeEXEC}`)?.args0.find((f: any) => f.name === key)?.type === "field_input") {
+                            value = parseInt(value).toString(16);
+                        }
                         xml += `<field name="${key}">${value}</field>`;
                     }
                     nested.push('block')
@@ -207,7 +220,7 @@
     $: if ($session !== null && $currentTask !== null && $session.questData.tasks[$currentTask] && workspace) renderTaskList($session.questData.tasks[$currentTask], false);
 </script>
 
-<div translate="yes" class="taskEditor" transition:fly={{duration: 200, x: 200, easing: cubicInOut}}>
+<div translate="yes" class="taskEditor" transition:fly|global={{duration: 200, x: 200, easing: cubicInOut}}>
     <BlocklyComponent
         config={{theme, toolbox, zoom: { controls: true, wheel: true }, move: { drag: true, wheel: true }}}
         locale={en}

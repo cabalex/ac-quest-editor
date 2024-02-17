@@ -45,12 +45,18 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
+        overflow-y: auto;
+    }
+
+    .iconBar::-webkit-scrollbar {
+        width: 0px;
     }
 
     .session {
         width: 34px;
         height: 34px;
         font-weight: bold;
+        flex-shrink: 0;
         line-height: 0;
         padding: 5px;
         border-radius: 5px;
