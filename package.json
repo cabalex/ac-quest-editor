@@ -1,0 +1,29 @@
+{
+  "name": "ac-quest-editor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "@tsconfig/svelte": "^5.0.2",
+    "svelte": "^4.2.10",
+    "svelte-check": "^3.6.3",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.0"
+  },
+  "dependencies": {
+    "@blockly/theme-dark": "^6.0.5",
+    "@oneidentity/zstd-js": "^1.0.3",
+    "@sveltejs/svelte-virtual-list": "^3.0.1",
+    "@tabler/icons-svelte": "^2.47.0",
+    "blockly": "^10.4.1",
+    "encoding-japanese": "^2.0.0"
+  }
+}
