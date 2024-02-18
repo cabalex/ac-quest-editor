@@ -1,11 +1,13 @@
 export default class Vector {
-    x: number;
-    y: number;
-    z: number;
-    w: number;
+    x = 0;
+    y = 0;
+    z = 0;
+    w = 0;
 
-    constructor(str: string) {
-        [this.x, this.y, this.z, this.w] = str.split(" ").map(parseFloat);
+    constructor(str?: string) {
+        if (str) {
+            [this.x, this.y, this.z, this.w] = str.split(" ").map(parseFloat);
+        }
     }
 
     repack() {

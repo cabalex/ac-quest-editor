@@ -23,7 +23,14 @@
     }
 </script>
 
-<div class="taskList" class:open={expanded} class:active={$currentTask == i} on:click={() => $currentTask = i}>
+<div
+    class="taskList"
+    class:open={expanded}
+    class:active={$currentTask == i}
+    role="button"
+    tabindex="0"
+    on:click={() => $currentTask = i}
+>
     <header>
         <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
             <IconCaretRightFilled />
@@ -47,7 +54,7 @@
     <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}}>
         <BoolInput
             label="Enabled"
-            description=""
+            description="Runs LineList 0 of this Task continuously. If disabled, the Task must be called from another Task to be ran."
             bind:value={task.enabled}
         />
         <BoolInput

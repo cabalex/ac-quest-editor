@@ -6,32 +6,36 @@
     import { lookup } from "../_lib/lookupTable";
     import About from "./tabs/About.svelte";
     import EnemySets from "./tabs/EnemySets/EnemySets.svelte";
-    import Zones from "./tabs/Zones.svelte";
+    import Zones from "./tabs/Zones/Zones.svelte";
     import Tasks from "./tabs/Tasks/Tasks.svelte";
     import TalkScripts from "./tabs/TalkScripts.svelte";
     import RepackModal from "./RepackModal.svelte";
-  import Flags from "./tabs/Flags.svelte";
+    import Flags from "./tabs/Flags.svelte";
+    import { tick } from "svelte";
 
     let repacking = false;
     let repackModalOpen = false;
     async function repack() {
-        console.log("Repacking...");
         repacking = true;
-        let arrayBuffer = await $session?.repack().catch(console.error);
-        if (arrayBuffer) {
-            let blob = new Blob([arrayBuffer], { type: "application/octet-stream" });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement("a");
-            a.href = url;
-            a.download = `quest${$session?.id}.dat`;
-            a.click();
-            URL.revokeObjectURL(url);
-            if (localStorage.getItem("acqe-hideRepackModal")) repackModalOpen = true;
-        } else {
-            alert("An error occurred during repack! Check the console for more details.");
-        }
+        
+        // must wrap in setTimeout to ensure the DOM updates beforehand
+        setTimeout(async () => {
+            let arrayBuffer = await $session?.repack().catch(console.error);
+            if (arrayBuffer) {
+                let blob = new Blob([arrayBuffer], { type: "application/octet-stream" });
+                let url = URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = `quest${$session?.id}.dat`;
+                a.click();
+                URL.revokeObjectURL(url);
+                if (localStorage.getItem("acqe-hideRepackModal")) repackModalOpen = true;
+            } else {
+                alert("An error occurred during repack! Check the console for more details.");
+            }
 
-        repacking = false;
+            repacking = false;
+        }, 0)
     }
 
     function deleteSession() {

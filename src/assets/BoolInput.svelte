@@ -47,7 +47,6 @@
     .switch {
         align-self: center;
         display: flex;
-        height: 100%;
     }
     .switch .slider {
         position: relative;

@@ -20,6 +20,11 @@
             <span>Details about the quest.</span>
         </div>
     </header>
+    <TextInput
+        label="Quest ID"
+        description="A 32-bit hex value that uniquely identifies this quest."
+        bind:value={session.id}
+    />
     <NumberInput
         label="Version"
         description="Always 16."

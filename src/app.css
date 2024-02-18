@@ -101,7 +101,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   z-index: 100;
 }
 
@@ -136,6 +136,16 @@ header .text h1 {
 header .text span {
   font-size: 0.8em;
   color: #999;
+}
+
+input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #666;
+  align-self: center;
+}
+svg {
+  flex-shrink: 0;
 }
 
 .disabled {

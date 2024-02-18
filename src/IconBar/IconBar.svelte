@@ -1,12 +1,13 @@
 <script lang="ts">
     import { IconPlus } from '@tabler/icons-svelte';
-    import { currentTab, currentTask, session, sessions } from '../store';
+    import { currentEm, currentTab, currentTask, session, sessions } from '../store';
     import { slide } from 'svelte/transition';
     import { lookup } from '../_lib/lookupTable';
     import type Quest from '../_lib/Quest';
 
     function switchTab(ses: Quest) {
         $currentTab = ses.tab;
+        $currentEm = null;
         $currentTask = null;
         $session = ses;
     }
@@ -21,7 +22,7 @@
             class:active={$session == ses}
             on:click={() => switchTab(ses)}
         >
-            {i + 1}
+            {ses.id}
         </button>
     {/each}
     <button
@@ -53,7 +54,7 @@
     }
 
     .session {
-        width: 34px;
+        width: 45px;
         height: 34px;
         font-weight: bold;
         flex-shrink: 0;

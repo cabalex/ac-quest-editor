@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { currentTab, currentTask, session } from "./store";
+    import { currentTab, currentEm, currentTask, session } from "./store";
     import IconBar from "./IconBar/IconBar.svelte";
     import SideBar from "./SideBar/SideBar.svelte";
     import Map from "./Map/Map.svelte";
     import GettingStarted from "./GettingStarted/GettingStarted.svelte";
     import Tasks from "./Tasks/Tasks.svelte";
+    import EmPopup from "./SideBar/tabs/EnemySets/EmPopup.svelte";
 </script>
 
 <IconBar />
@@ -13,6 +14,11 @@
         <GettingStarted />
     {:else}
         <SideBar />
+        {#if $currentTab == "enemySets" && $currentEm !== null}
+            {#key $currentEm.Ids[0]}
+                <EmPopup em={$currentEm} on:close={() => $currentEm = null} />            
+            {/key}
+        {/if}
         {#if $currentTab == "enemySets" || $currentTab == "zones" || $currentTab == "about"}
             <Map />
         {/if}

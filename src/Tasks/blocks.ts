@@ -461,21 +461,17 @@ export const execBlocks = [
     }]),
     execDefine("exec-5", "Load GroupNo %1 (setMax %2)", [
         {
-            "type": "field_number",
-            "name": "EXECGroupNo",
-            "value": 0,
-            "min": 0
+            "type": "input_dummy",
+            "name": "EXECGroupNo_dummy",
         },
         trueFalse("EXECSetMax"),
-    ]),
+    ], ["emgroup"]),
     execDefine("exec-6", "Unload GroupNo %1", [
         {
-            "type": "field_number",
-            "name": "EXECGroupNo",
-            "value": 0,
-            "min": 0
-        }
-    ]),
+            "type": "input_dummy",
+            "name": "EXECGroupNo_dummy",
+        },
+    ], ["emgroup"]),
     execDefine("exec-7", "Load event %1 from PhaseNo %2 (EventType %3, ExecType %4, PreRead %5) [CHAIN %6: EventNo %7, PhaseNo %8, type %9] [FADEIN %10: Color: %11, type %12] [FADEOUT %13: CanFadeIn %14, Color: %15, type %16] [START %17: (%18, %19, %20, %21deg), OFFSET %22: (%23, %24, %25, rotX %26deg, rotY %27deg)", [
         {
             "type": "field_input",
@@ -747,20 +743,16 @@ export const execBlocks = [
     ]),
     execDefine("exec-21", "Load GroupNo %1", [
         {
-            "type": "field_number",
-            "name": "EXECGroupNo",
-            "value": 0,
-            "min": 0
-        }
-    ]),
+            "type": "input_dummy",
+            "name": "EXECGroupNo_dummy",
+        },
+    ], ["emgroup"]),
     execDefine("exec-22", "Load GroupNo %1", [
         {
-            "type": "field_number",
-            "name": "EXECGroupNo",
-            "value": 0,
-            "min": 0
-        }
-    ]),
+            "type": "input_dummy",
+            "name": "EXECGroupNo_dummy",
+        },
+    ], ["emgroup"]),
     execDefine("exec-23", "Load SubTitle %1 from Quest %2", [
         {
             "type": "field_number",
@@ -1158,13 +1150,6 @@ export const toolbox = `<xml id="toolbox" style="display: none">` +
     `</category>` +
     `</xml>`;
 
-
-function fallbackOptions() {
-    for (let i = 0; i < 64; i++) {
-        options.push([`(${i}) ${i}`, i.toString()])
-    }
-}
-
 // EXTENSIONS
 Blockly.Extensions.register('questflag', function() {
     (this.getInput('ExecFlagNo_dummy') || this.getInput('IFFlagNo_dummy')).appendField(
@@ -1203,6 +1188,18 @@ Blockly.Extensions.register('saveflag', function() {
             return options;
         }),
         !!this.getInput('IFFlagNo_dummy') ? 'IFFlagNo' : 'ExecFlagNo'
+    );
+    this.setInputsInline(true);
+});
+
+Blockly.Extensions.register('emgroup', function() {
+    this.getInput('EXECGroupNo_dummy').appendField(
+        new Blockly.FieldDropdown(() => {
+            let ses = get(session);
+            if (!ses) return [];
+            return ses.enemySet.sets.map(set => [`(${set.number}) ${set.name}`, set.number.toString()]);
+        }),
+        'EXECGroupNo'
     );
     this.setInputsInline(true);
 });

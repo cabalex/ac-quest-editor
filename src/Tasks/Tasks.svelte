@@ -235,6 +235,6 @@
         right: 0;
         top: 0;
         height: 100%;
-        width: calc(100% - 797px);
+        width: calc(100% - 807px);
     }
 </style>

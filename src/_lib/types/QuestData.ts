@@ -173,7 +173,7 @@ export class TaskList {
             value: "",
             children: [
                 {
-                    name: "Enabled",
+                    name: "TaskEnable",
                     attributes: {},
                     value: this.enabled ? "1" : "0",
                     children: []
@@ -191,7 +191,7 @@ export class TaskList {
                     children: []
                 },
                 {
-                    name: "LineLists",
+                    name: "LineListTree",
                     attributes: {},
                     value: "",
                     children: this.lineLists.map((lineList) => {
@@ -258,17 +258,14 @@ export class Command {
                 {
                     name: "typeIF",
                     attributes: {},
-                    value: "",
+                    value: this.typeIF.toString(),
                     children: []
                 },
                 ...Object.keys(this.IFArgs).map((key) => { return { name: key, attributes: {}, value: this.IFArgs[key], children: [] } }),
                 {
                     name: "typeEXEC",
-                    attributes: {
-                        type: this.typeEXEC.toString(),
-                        ...this.EXECArgs
-                    },
-                    value: "",
+                    attributes: {},
+                    value: this.typeEXEC.toString(),
                     children: []
                 },
                 ...Object.keys(this.EXECArgs).map((key) => { return { name: key, attributes: {}, value: this.EXECArgs[key], children: [] } }),
@@ -312,14 +309,21 @@ export class AreaGroup {
     index: number;
     type: number;
     center: Vector;
-    points?: [Vector, Vector, Vector, Vector];
-    radius?: number;
+    points: [Vector, Vector, Vector, Vector];
+    radius: number;
     height: number;
     debugDisplay: boolean;
 
     constructor(node: Node) {
         this.index = parseInt(node.children[0].value);
         this.type = parseInt(node.children[1].value);
+        this.points = [
+            new Vector(),
+            new Vector(),
+            new Vector(),
+            new Vector()
+        ];
+        this.radius = 0;
         switch (this.type) {
             case 1:
                 this.center = new Vector(node.children[2].value);
