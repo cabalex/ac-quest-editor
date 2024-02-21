@@ -1,6 +1,6 @@
 <script lang="ts">
     import { IconCaretRightFilled, IconTrash, IconUsers, IconUser, IconChevronRight } from "@tabler/icons-svelte";
-    import type { EmSet } from "../../../_lib/types/EnemySet";
+    import type { Em, EmSet } from "../../../_lib/types/EnemySet";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import TextInput from "../../../assets/TextInput.svelte";
     import NumberInput from "../../../assets/NumberInput.svelte";
@@ -22,9 +22,28 @@
             dispatch("delete", set);
         }
     }
+
+    let elem: HTMLDivElement;
+    let shouldScroll = true;
+
+    const scroll = () => {
+        if (elem && shouldScroll) {
+            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    function focusEm(em: Em) {
+        // only scroll the list if the em is being selected from the map.
+        shouldScroll = false;
+        $currentEm = em;
+        setTimeout(() => shouldScroll = true, 0);
+    }
+
+    // @ts-ignore
+    $: if (set.ems.includes($currentEm)) scroll();
 </script>
 
-<div class="emSets">
+<div class="emSets" bind:this={elem}>
     <header>
         <button class="expand" class:active={expanded} on:click={() => expanded = !expanded}>
             <IconCaretRightFilled />
@@ -39,7 +58,7 @@
     </header>
     <div class="ems">
         {#each set.ems as em}
-            <button class="em" class:active={$currentEm == em} on:click={() => $currentEm = em}>
+            <button class="em" class:active={$currentEm == em} on:click={focusEm.bind(null, em)}>
                 <IconUser />
                 <span>{questLookup(em.Ids[0].toString(16))}</span>
                 <IconChevronRight />

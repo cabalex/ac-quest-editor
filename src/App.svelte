@@ -6,6 +6,15 @@
     import GettingStarted from "./GettingStarted/GettingStarted.svelte";
     import Tasks from "./Tasks/Tasks.svelte";
     import EmPopup from "./SideBar/tabs/EnemySets/EmPopup.svelte";
+
+
+    $: {
+        if ($session === null) {
+            $currentTab = null;
+            $currentEm = null;
+            $currentTask = null;
+        }
+    }
 </script>
 
 <IconBar />
@@ -18,11 +27,9 @@
                 <EmPopup em={$currentEm} on:close={() => $currentEm = null} />            
             {/key}
         {/if}
-        {#if $currentTab == "enemySets" || $currentTab == "zones" || $currentTab == "about"}
-            <Map />
-        {/if}
         {#if ($currentTab == "tasks" || $currentTab == "flags" || $currentTab == "talkScripts") && $currentTask !== null}
             <Tasks />
         {/if}
+        <Map />
     {/if}
 </main>

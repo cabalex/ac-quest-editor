@@ -22,6 +22,7 @@
     "@blockly/theme-dark": "^6.0.5",
     "@mit-app-inventor/blockly-plugin-workspace-multiselect": "^0.1.11",
     "@oneidentity/zstd-js": "^1.0.3",
+    "@panzoom/panzoom": "^4.5.1",
     "@sveltejs/svelte-virtual-list": "^3.0.1",
     "@tabler/icons-svelte": "^2.47.0",
     "blockly": "^10.4.1",

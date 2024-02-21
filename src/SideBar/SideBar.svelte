@@ -46,8 +46,13 @@
     }
 
     function setTab(tab: string) {
-        currentTab.set(tab);
-        if ($session) $session.tab = tab;
+        if ($currentTab == tab) {
+            $currentTab = null;
+            if ($session) $session.tab = null;
+        } else {
+            currentTab.set(tab);
+            if ($session) $session.tab = tab;
+        }
     }
 </script>
 
@@ -135,7 +140,7 @@
         border-right: 1px solid #444;
         background-color: #222;
         width: 200px;
-        z-index: 5;
+        z-index: 10;
 
         display: flex;
         flex-direction: column;

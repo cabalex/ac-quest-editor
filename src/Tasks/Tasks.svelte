@@ -305,6 +305,7 @@
         right: 0;
         top: 0;
         height: 100%;
-        width: calc(100% - 807px);
+        z-index: 5;
+        width: calc(100% - 806px);
     }
 </style>

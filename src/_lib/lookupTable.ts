@@ -1525,13 +1525,13 @@ const questToArea = {
     "qcf00": "r840"
 }
 
-export function questAreaLookup(name: string) {
+export function questAreaLookup(id: string) {
     // Quest formatting ("qXXXX" and "questXXXX")
-    var formatted = name.replace("quest", "q").slice(0, 5);
+    var formatted = "q" + id;
     if (formatted in questToArea) {
-        return questToArea[formatted as never] + name.replace("quest", "q").slice(5);
+        return questToArea[formatted as never];
     }
-    return false;
+    return "";
 }
 
 export function itemLookup(id: number) {

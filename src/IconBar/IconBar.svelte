@@ -40,7 +40,7 @@
         height: calc(100% - 20px);
         border-right: 1px solid #444;
         background-color: #111;
-        z-index: 10;
+        z-index: 12;
 
         display: flex;
         flex-direction: column;

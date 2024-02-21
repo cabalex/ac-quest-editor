@@ -24,6 +24,12 @@
             throw e;
         }
     }
+
+    // For some reason, the map can be laggy to remove itself.
+    // This hack deletes the DOM element early.
+    $: if (!hidden && document.getElementsByClassName('mapContainer').length) {
+        document.getElementsByClassName('mapContainer')[0].remove();
+    }
 </script>
 <input
     bind:this={inputElem}
