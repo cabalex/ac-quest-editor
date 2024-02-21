@@ -7,6 +7,7 @@
     import QuestList from "./QuestList.svelte";
 
     let inputElem: HTMLInputElement;
+    export let hidden: boolean = false;
 
     function uploadFile(e: any) {
         loadQuest({name: e.target.files[0].name, arrayBuffer: e.target.files[0]});
@@ -31,7 +32,7 @@
     type="file"
     style="display: none"
 />
-<div class="gettingStartedOuter">
+<div class="gettingStartedOuter" style={hidden ? "display: none" : ""}>
     <div class="gettingStarted">
         <h1>Astral Chain Quest Editor <span>v2.0-pre</span></h1>
         <p>created by <a href="https://cabalex.github.io" target="_blank" rel="noopener noreferrer">cabalex</a>.</p>

@@ -17,7 +17,7 @@
         <div class="text">
             <h1>What now?</h1>
         </div>
-        <button class="transparentBtn" style="color: white" on:click={close}>
+        <button class="transparentBtn" style="color: white" on:click={() => dispatch("close")}>
             <IconX size={24}  />
         </button>
     </header>

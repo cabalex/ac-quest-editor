@@ -10,9 +10,8 @@
 
 <IconBar />
 <main style="width: 100%; position: relative">
-    {#if $session == null}
-        <GettingStarted />
-    {:else}
+    <GettingStarted hidden={$session !== null} />
+    {#if $session !== null}
         <SideBar />
         {#if $currentTab == "enemySets" && $currentEm !== null}
             {#key $currentEm.Ids[0]}

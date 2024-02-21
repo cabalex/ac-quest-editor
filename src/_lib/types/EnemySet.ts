@@ -1,4 +1,5 @@
 import type { FileData, Node } from "../files/BXM/extract";
+import { b_crc32 } from "../files/DAT/lib/generateDATHash";
 import Vector from "../Vector";
 
 export default class EnemySet {
@@ -7,7 +8,7 @@ export default class EnemySet {
 
     constructor(bxm: FileData) {
         // BXM file
-        this.sets = bxm.data.children[0].children.map(set => new EmSet(set));
+        this.sets = bxm.data.children[0].children.map(set => EmSet.fromNode(set));
         this.groupPos = bxm.data.children[1].children.map(pos => new GroupPos(pos));
     }
 
@@ -48,20 +49,46 @@ export class EmSet {
 
     ems: Em[];
 
-    constructor(node: Node) {
-        this.CanSet = node.attributes["CanSet"] == "1";
-        this.number = parseInt(node.attributes["number"]);
-        this.easy = node.attributes["easy"];
-        this.normal = node.attributes["normal"];
-        this.hard = node.attributes["hard"];
-        this.very_hard = node.attributes["very_hard"];
-        this.name = node.attributes["name"];
-        this.groupNameHash = parseInt(node.attributes["GroupNameHash"]);
+    constructor(name: string, number: number, ems: Em[], options?: {
+        CanSet?: boolean,
+        easy?: string,
+        normal?: string,
+        hard?: string,
+        very_hard?: string,
+        groupNameHash?: number
+    }) { 
+        this.CanSet = options?.CanSet || true;
+        this.number = number;
+        this.easy = options?.easy || "";
+        this.normal = options?.normal || "";
+        this.hard = options?.hard || "";
+        this.very_hard = options?.very_hard || "";
+        this.name = name;
+        this.groupNameHash = options?.groupNameHash || (b_crc32(name.toLowerCase()) & 0x7FFFFFFF);
 
-        this.ems = node.children.map((child: Node) => new Em(child));
+        this.ems = ems;
+    }
+
+    static fromNode(node: Node) {
+        let options = {
+            CanSet: node.attributes["CanSet"] == "1",
+            easy: node.attributes["easy"],
+            normal: node.attributes["normal"],
+            hard: node.attributes["hard"],
+            very_hard: node.attributes["very_hard"],
+            groupNameHash: parseInt(node.attributes["GroupNameHash"])
+        }
+        let number = parseInt(node.attributes["number"]);
+        let name = node.attributes["name"];
+        let ems = node.children.map((child: Node) => new Em(child));
+
+        return new EmSet(name, number, ems, options);
     }
 
     repack() {
+        // recalculate hash
+        this.groupNameHash = b_crc32(this.name.toLowerCase()) & 0x7FFFFFFF;
+        
         const node: Node = {
             name: "EmGroup",
             attributes: {

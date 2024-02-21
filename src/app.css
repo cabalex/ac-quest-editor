@@ -73,6 +73,15 @@ button.transparentBtn:hover:not(:disabled) {
   background-color: rgba(255, 255, 255, 0.12);
   color: var(--primary-100);
 }
+button.addBtn {
+  width: 100%;
+  margin-top: 50px;
+  padding: 20px;
+  background-color: var(--primary-700);
+}
+button.addBtn:hover {
+  background-color: var(--primary-600);
+}
 button:disabled {
   cursor: not-allowed;
   opacity: 0.5;

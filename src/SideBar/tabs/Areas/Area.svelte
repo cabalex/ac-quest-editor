@@ -1,6 +1,6 @@
 <script lang="ts">
     import { IconCaretRightFilled, IconMapPin, IconTrash } from "@tabler/icons-svelte";
-    import type { AreaGroup } from "../../../_lib/types/QuestData";
+    import type { Area } from "../../../_lib/types/QuestData";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import { slide } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
@@ -8,26 +8,27 @@
     import NumberInput from "../../../assets/NumberInput.svelte";
     import VectorInput from "../../../assets/VectorInput.svelte";
     
-    export let zone: AreaGroup;
+    export let area: Area;
     export let i: number;
 
     let expanded = false;
 
-    let isSphere = zone.type === 2;
-    $: zone.type = isSphere ? 2 : 1;
+    let isSphere = area.type === 2;
+    $: area.type = isSphere ? 2 : 1;
 
     const dispatch = createEventDispatcher();
 
     function confirmDelete() {
-        if (confirm(`Are you sure you want to delete Zone ${zone.index}? This cannot be undone.`)) {
-            dispatch("delete", zone);
+        if (confirm(`Are you sure you want to delete Area ${area.index}? This cannot be undone.`)) {
+            dispatch("delete", area);
         }
     }
 </script>
 
 <div
-    class="zone"
+    class="area"
     class:open={expanded}
+    transition:slide={{duration: 100, easing: cubicInOut}}
 >
     <header>
         <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
@@ -35,65 +36,65 @@
         </button>
         <IconMapPin />
         <div class="text">
-            <h3>Zone {zone.index}</h3>
+            <h3>Area {area.index}</h3>
             <span>{isSphere ? "Sphere" : "Box"}</span>
         </div>
     </header>
     {#if expanded}
     <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}}>
         <NumberInput
-            label="Zone ID"
-            bind:value={zone.index}
+            label="Area ID"
+            bind:value={area.index}
         />
         <BoolInput
-            label="Spherical zone"
+            label="Spherical area"
             bind:value={isSphere}
         />
         <div class="nested">
             <VectorInput
                 label="Center"
-                bind:value={zone.center}
+                bind:value={area.center}
             />
             <NumberInput
                 label="Height"
-                bind:value={zone.height}
+                bind:value={area.height}
             />
             <hr />
             {#if isSphere}
             <NumberInput
                 label="Radius"
-                bind:value={zone.radius}
+                bind:value={area.radius}
             />
             {:else}
             <VectorInput
                 label="Point 1"
-                bind:value={zone.points[0]}
+                bind:value={area.points[0]}
             />
             <hr />
             <VectorInput
                 label="Point 2"
-                bind:value={zone.points[1]}
+                bind:value={area.points[1]}
             />
             <hr />
             <VectorInput
                 label="Point 3"
-                bind:value={zone.points[2]}
+                bind:value={area.points[2]}
             />
             <hr />
             <VectorInput
                 label="Point 4"
-                bind:value={zone.points[3]}
+                bind:value={area.points[3]}
             />
             {/if}
             <BoolInput
                 label="Debug display"
                 description="Does nothing."
-                bind:value={zone.debugDisplay}
+                bind:value={area.debugDisplay}
             />
         </div>
         <button class="deleteBtn" on:click={confirmDelete}>
             <IconTrash />
-            Delete zone
+            Delete Area
         </button>
     </div>
     {/if}
@@ -107,13 +108,13 @@
     .content {
         border-top: 1px solid #333;
     }
-    .zone {
+    .area {
         width: calc(100% - 10px);
         background-color: #444;
         margin: 5px;
         border-radius: 10px;
     }
-    .zone.open header {
+    .area.open header {
         border-radius: 10px 10px 0 0;
     }
     .text > * {

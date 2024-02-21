@@ -17,12 +17,12 @@ export default class QuestData {
 
     questFlags: string[];
     saveFlags: string[];
-    areas: Area[];
+    areas: AreaGroup[];
 
     constructor(bxm: FileData) {
         // BXM file
         this.version = parseInt(bxm.data.children[0].value);
-        this.tasks = bxm.data.children[1].children.map(node => new TaskList(node));
+        this.tasks = bxm.data.children[1].children.map(node => TaskList.fromNode(node));
         this.sub = {
             SetMainScenarioValueStr: bxm.data.children[2].attributes["SetMainScenarioValueStr"],
             MinLevel: parseInt(bxm.data.children[2].children[0].value),
@@ -35,7 +35,7 @@ export default class QuestData {
 
         this.questFlags = bxm.data.children[3].children.map(node => node.attributes["QuestFlagName"]);
         this.saveFlags = bxm.data.children[4].children.map(node => node.attributes["SaveFlagName"]);
-        this.areas = bxm.data.children[5].children.map(node => new Area(node));
+        this.areas = bxm.data.children[5].children.map(node => AreaGroup.fromNode(node));
     }
 
     repack(): FileData {
@@ -153,14 +153,24 @@ export class TaskList {
 
     lineLists: Command[][];
 
-    constructor(node: Node) {
-        this.name = node.attributes["TaskName"];
-        this.templateName = node.attributes["TemplateName"];
-        this.enabled = node.children[0].value == "1";
-        this.workInAdvance = node.children[1].value == "1";
-        this.TaskColor = parseInt(node.children[2].value);
+    constructor(name: string, templateName: string, enabled: boolean, workInAdvance: boolean, taskColor: number, lineLists: Command[][]) {
+        this.name = name;
+        this.templateName = templateName;
+        this.enabled = enabled;
+        this.workInAdvance = workInAdvance;
+        this.TaskColor = taskColor;
+        this.lineLists = lineLists;
+    }
 
-        this.lineLists = node.children[3].children.map((child: Node) => child.children.map(commandList => Command.fromNode(commandList)));
+    static fromNode(node: Node) {
+        return new TaskList(
+            node.attributes["TaskName"],
+            node.attributes["TemplateName"],
+            node.children.find(x => x.name == "TaskEnable")?.value == "1" || false,
+            node.children.find(x => x.name == "WorkInAdvance")?.value == "1" || false,
+            parseInt(node.children.find(x => x.name == "TaskColor")?.value || "0"),
+            node.children.find(x => x.name == "LineListTree")?.children.map((child: Node) => child.children.map(commandList => Command.fromNode(commandList))) || []
+        )
     }
 
     repack() {
@@ -276,17 +286,26 @@ export class Command {
     }
 }
 
-export class Area {
+export class AreaGroup {
     index: number;
     name: string;
     debugDisplay: boolean;
-    groups: AreaGroup[];
+    groups: Area[];
     
-    constructor(node: Node) {
-        this.index = parseInt(node.attributes["GroupIndex"]);
-        this.name = node.attributes["GroupName"];
-        this.debugDisplay = node.attributes["GroupDebugDisp"] == "1";
-        this.groups = node.children.map((child: Node) => new AreaGroup(child));
+    constructor(name: string, index: number, debugDisplay: boolean, groups: Area[]) {
+        this.index = index;
+        this.name = name;
+        this.debugDisplay = debugDisplay;
+        this.groups = groups;
+    }
+
+    static fromNode(node: Node) {
+        return new AreaGroup(
+            node.attributes["GroupName"],
+            parseInt(node.attributes["GroupIndex"]),
+            node.attributes["GroupDebugDisp"] == "1",
+            node.children.map((child: Node) => Area.fromNode(child))
+        )
     }
 
     repack() {
@@ -298,14 +317,14 @@ export class Area {
                 GroupDebugDisp: this.debugDisplay ? "1" : "0"
             },
             value: "",
-            children: this.groups.map((group: AreaGroup) => group.repack())
+            children: this.groups.map((group: Area) => group.repack())
         }
 
         return node;
     }
 }
 
-export class AreaGroup {
+export class Area {
     index: number;
     type: number;
     center: Vector;
@@ -314,38 +333,56 @@ export class AreaGroup {
     height: number;
     debugDisplay: boolean;
 
-    constructor(node: Node) {
-        this.index = parseInt(node.children[0].value);
-        this.type = parseInt(node.children[1].value);
-        this.points = [
-            new Vector(),
-            new Vector(),
-            new Vector(),
-            new Vector()
-        ];
-        this.radius = 0;
-        switch (this.type) {
+    constructor(index: number, type: number, options?: {
+        center?: Vector,
+        points?: [Vector, Vector, Vector, Vector],
+        radius?: number,
+        height?: number,
+        debugDisplay?: boolean
+    }) {
+        this.index = index;
+        this.type = type;
+        this.center = options?.center || new Vector();
+        this.points = options?.points || [new Vector(), new Vector(), new Vector(), new Vector()];
+        this.radius = options?.radius || 0;
+        this.height = options?.height || 0;
+        this.debugDisplay = options?.debugDisplay || false;
+    }
+
+    static fromNode(node: Node) {
+        let index = parseInt(node.children[0].value);
+        let type = parseInt(node.children[1].value);
+        let options = {
+            center: new Vector(),
+            points: [new Vector(), new Vector(), new Vector(), new Vector()] as [Vector, Vector, Vector, Vector],
+            radius: 0,
+            height: 0,
+            debugDisplay: false
+        }
+        switch (type) {
             case 1:
-                this.center = new Vector(node.children[2].value);
-                this.points = [
+                options.center = new Vector(node.children[2].value);
+                options.points = [
                     new Vector(node.children[3].value),
                     new Vector(node.children[4].value),
                     new Vector(node.children[5].value),
                     new Vector(node.children[6].value)
                 ];
-                this.height = parseFloat(node.children[7].value);
-                this.debugDisplay = node.children[8].value == "1";
+                options.height = parseFloat(node.children[7].value);
+                options.debugDisplay = node.children[8].value == "1";
                 break;
             case 2:
-                this.center = new Vector(node.children[2].value);
-                this.height = parseFloat(node.children[3].value);
-                this.radius = parseFloat(node.children[4].value);
-                this.debugDisplay = node.children[5].value == "1";
+                options.center = new Vector(node.children[2].value);
+                options.height = parseFloat(node.children[3].value);
+                options.radius = parseFloat(node.children[4].value);
+                options.debugDisplay = node.children[5].value == "1";
                 break;
             default:
                 console.error(node);
-                throw new Error("Unknown AreaGroup type: " + this.type);
+                throw new Error("Unknown AreaGroup type: " + type);
         }
+
+        return new Area(index, type, options);
     }
 
     repack() {

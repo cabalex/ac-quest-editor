@@ -2,7 +2,7 @@ var a_table = "00000000 77073096 EE0E612C 990951BA 076DC419 706AF48F E963A535 9E
 var b_table = a_table.split(' ').map(function(s){ return parseInt(s,16) });
 
 // https://stackoverflow.com/questions/18638900/javascript-crc32
-function b_crc32 (str: string) {
+export function b_crc32 (str: string) {
     var crc = -1;
     for(var i=0, iTop=str.length; i<iTop; i++) {
         crc = ( crc >>> 8 ) ^ b_table[( crc ^ str.charCodeAt( i ) ) & 0xFF];

@@ -2,16 +2,15 @@
     import { fly } from "svelte/transition";
     import { currentTab, session, sessions } from "../store";
     import { cubicInOut } from "svelte/easing";
-    import { IconCode, IconDownload, IconFlag, IconInfoCircle, IconLicense, IconLoader2, IconMap2, IconMessage, IconPackageExport, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
+    import { IconCode, IconDownload, IconFlag, IconInfoCircle, IconLoader2, IconMap2, IconMessage, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
     import { lookup } from "../_lib/lookupTable";
     import About from "./tabs/About.svelte";
     import EnemySets from "./tabs/EnemySets/EnemySets.svelte";
-    import Zones from "./tabs/Zones/Zones.svelte";
+    import Areas from "./tabs/Areas/Areas.svelte";
     import Tasks from "./tabs/Tasks/Tasks.svelte";
     import TalkScripts from "./tabs/TalkScripts.svelte";
     import RepackModal from "./RepackModal.svelte";
     import Flags from "./tabs/Flags.svelte";
-    import { tick } from "svelte";
 
     let repacking = false;
     let repackModalOpen = false;
@@ -29,7 +28,7 @@
                 a.download = `quest${$session?.id}.dat`;
                 a.click();
                 URL.revokeObjectURL(url);
-                if (localStorage.getItem("acqe-hideRepackModal")) repackModalOpen = true;
+                if (!localStorage.getItem("acqe-hideRepackModal")) repackModalOpen = true;
             } else {
                 alert("An error occurred during repack! Check the console for more details.");
             }
@@ -54,7 +53,6 @@
 
 <aside transition:fly={{x: -200, duration: 200, easing: cubicInOut}}>
     <header>
-        <IconLicense size={36} />
         <div class="text">
             <h1>
                 Quest <b>{$session?.id}</b>
@@ -74,7 +72,7 @@
     </button>
     <button class:active={$currentTab == "zones"} on:click={() => setTab("zones")}>
         <IconMap2 />
-        Zones
+        Areas
     </button>
     <h2 class="sectionHeader">Quest logic</h2>
     <button class:active={$currentTab == "tasks"} on:click={() => setTab("tasks")}>
@@ -113,7 +111,7 @@
     {:else if $currentTab == "enemySets"}
         <EnemySets session={$session} />
     {:else if $currentTab == "zones"}
-        <Zones session={$session} />
+        <Areas session={$session} />
     {:else if $currentTab == "tasks"}
         <Tasks session={$session} />
     {:else if $currentTab == "flags"}

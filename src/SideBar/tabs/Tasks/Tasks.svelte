@@ -1,15 +1,28 @@
 <script lang="ts">
     import { fly } from "svelte/transition";
-    import { IconCode, IconHelpCircleFilled, IconX } from "@tabler/icons-svelte";
+    import { IconCode, IconHelpCircleFilled, IconPlus, IconX } from "@tabler/icons-svelte";
     import "../tabs.css";
     import { cubicInOut } from "svelte/easing";
     import type Quest from "../../../_lib/Quest";
     import Task from "./Task.svelte";
-  import Modal from "../../../assets/Modal.svelte";
+    import Modal from "../../../assets/Modal.svelte";
+    import { Command, TaskList } from "../../../_lib/types/QuestData";
     
     export let session: Quest;
 
     let helpModalOpen = false;
+
+    function addTask() {
+        let newTask = new TaskList(
+            `Task ${session.questData.tasks.length}`,
+            "",
+            true,
+            false,
+            0,
+            [[new Command(0, {}, 0, {})]]
+        );
+        session.questData.tasks = [...session.questData.tasks, newTask];
+    }
 </script>
 
 <aside class="tabSidebar" transition:fly|global={{x: -200, duration: 200, easing: cubicInOut}}>
@@ -26,6 +39,10 @@
     {#each session.questData.tasks as task, i}
         <Task task={task} i={i} on:delete={() => session.questData.tasks = session.questData.tasks.filter(x => x != task)} />
     {/each}
+    <button class="addBtn" on:click={addTask}>
+        <IconPlus />
+        Add Task
+    </button>
 </aside>
 
 {#if helpModalOpen}

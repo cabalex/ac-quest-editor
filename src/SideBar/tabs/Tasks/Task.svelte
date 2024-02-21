@@ -17,8 +17,9 @@
     const dispatch = createEventDispatcher();
 
     function confirmDelete() {
-        if (confirm(`Are you sure you want to delete Task ${task.name}? This cannot be undone.`)) {
+        if (confirm(`Are you sure you want to delete ${task.name}? This cannot be undone.`)) {
             dispatch("delete", task);
+            if ($currentTask === i) $currentTask = null;
         }
     }
 </script>
@@ -30,6 +31,7 @@
     role="button"
     tabindex="0"
     on:click={() => $currentTask = i}
+    transition:slide={{duration: 100, easing: cubicInOut}}
 >
     <header>
         <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
@@ -48,10 +50,11 @@
                 <span translate="yes">{task.templateName}</span>
             {/if}
         </div>
-        <IconPencil />
+        <IconPencil color={task.TaskColor > 0 ? `var(--primary-${task.TaskColor * 100})` : "white"} />
     </header>
     {#if expanded}
-    <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}}>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}} on:click={(e) => e.stopPropagation()}>
         <BoolInput
             label="Enabled"
             description="Runs LineList 0 of this Task continuously. If disabled, the Task must be called from another Task to be ran."

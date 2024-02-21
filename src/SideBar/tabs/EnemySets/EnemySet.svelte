@@ -57,11 +57,6 @@
             label="Name"
             bind:value={set.name}
         />
-        <NumberInput
-            label="Group Name Hash"
-            description={`Current hash: 0x${set.groupNameHash.toString(16)}`}
-            bind:value={set.groupNameHash}
-        />
         <BoolInput
             label="Can set"
             description="Unknown purpose."
