@@ -290,7 +290,7 @@
     $: if ($currentTask !== null) render();
 </script>
 
-<div translate="yes" class="taskEditor" transition:fly|global={{duration: 200, x: 200, easing: cubicInOut}}>
+<div class="taskEditor" transition:fly|global={{duration: 200, x: 200, easing: cubicInOut}}>
     <BlocklyComponent
         config={config}
         locale={en}

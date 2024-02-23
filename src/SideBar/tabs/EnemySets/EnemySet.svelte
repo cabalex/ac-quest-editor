@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { IconCaretRightFilled, IconTrash, IconUsers, IconUser, IconChevronRight } from "@tabler/icons-svelte";
+    import { IconCaretRightFilled, IconTrash, IconUsers, IconUser, IconChevronRight, IconCode } from "@tabler/icons-svelte";
     import type { Em, EmSet } from "../../../_lib/types/EnemySet";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import TextInput from "../../../assets/TextInput.svelte";
@@ -9,7 +9,7 @@
     import { createEventDispatcher } from "svelte";
     import '../tabs.css';
     import { questLookup } from "../../../_lib/lookupTable";
-    import { currentEm } from "../../../store";
+    import { currentEm, currentTab, currentTask, session } from "../../../store";
     
     export let set: EmSet;
 
@@ -39,6 +39,29 @@
         setTimeout(() => shouldScroll = true, 0);
     }
 
+    function referencedTasks() {
+        let references: [string, number][] = []
+        for (let i = 0; i < ($session?.questData.tasks.length || 0); i++) {
+            let task = $session?.questData.tasks[i];
+            for (let lineList of (task?.lineLists || [])) {
+                for (let command of lineList) {
+                    let ifArg = Object.keys(command.IFArgs).find(x => x.endsWith("GroupNo"));
+                    let execArg = Object.keys(command.EXECArgs).find(x => x.endsWith("GroupNo"));
+                    if (ifArg && command.IFArgs[ifArg] == set.number.toString()) {
+                        references.push([task?.name || "Task", i]);
+                        break;
+                    } else if (execArg && command.EXECArgs[execArg] == set.number.toString()) {
+                        references.push([task?.name || "Task", i]);
+                        break;
+                    }
+                }
+                if (references.length > 0 && references[references.length - 1][1] === i) break;
+            }
+        }
+        return references;
+    }
+    let references = referencedTasks();
+
     // @ts-ignore
     $: if (set.ems.includes($currentEm)) scroll();
 </script>
@@ -50,7 +73,7 @@
         </button>
         <span class="iconNumber">
             {set.number}
-            <IconUsers />
+            <IconUsers color={`hsl(${set.number * 10}, 50%, 70%)`} />
         </span>
         <div class="text">
             <h3 translate="yes">{set.name}</h3>
@@ -62,6 +85,14 @@
                 <IconUser />
                 <span>{questLookup(em.Ids[0].toString(16))}</span>
                 <IconChevronRight />
+            </button>
+        {/each}
+    </div>
+    <div class="referencedTasks">
+        {#each references as reference}
+            <button class="referencedTask" on:click={() => { $currentTask = reference[1]; $currentTab = "tasks"}}>
+                <IconCode />
+                <span translate="yes">{reference[0]}</span>
             </button>
         {/each}
     </div>
@@ -157,6 +188,16 @@
     }
     .em:hover:not(.active) {
         background-position-x: 0;
+    }
+    .referencedTasks {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 5px;
+    }
+    .referencedTask {
+        padding: 5px;
+        margin: 5px;
+        text-align: left;
     }
     button.em span {
         flex-grow: 1;

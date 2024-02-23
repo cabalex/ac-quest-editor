@@ -2,13 +2,13 @@
     import { fly } from "svelte/transition";
     import { currentTab, session, sessions } from "../store";
     import { cubicInOut } from "svelte/easing";
-    import { IconCode, IconDownload, IconFlag, IconInfoCircle, IconLoader2, IconMap2, IconMessage, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
+    import { IconCode, IconDownload, IconFlag, IconInfoCircle, IconLoader2, IconMap2, IconMessage, IconMessageX, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
     import { lookup } from "../_lib/lookupTable";
     import About from "./tabs/About.svelte";
     import EnemySets from "./tabs/EnemySets/EnemySets.svelte";
     import Areas from "./tabs/Areas/Areas.svelte";
     import Tasks from "./tabs/Tasks/Tasks.svelte";
-    import TalkScripts from "./tabs/TalkScripts.svelte";
+    import TalkScripts from "./tabs/TalkScripts/TalkScripts.svelte";
     import RepackModal from "./RepackModal.svelte";
     import Flags from "./tabs/Flags.svelte";
 
@@ -89,7 +89,11 @@
         Flags
     </button>
     <button class:active={$currentTab == "talkScripts"} on:click={() => setTab("talkScripts")}>
-        <IconMessage />
+        {#if $session?.talkScript}
+            <IconMessage />
+        {:else}
+            <IconMessageX />
+        {/if}
         TalkScripts
     </button>
     <div style="flex-grow: 1; height: 100%" />

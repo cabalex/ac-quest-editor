@@ -5,6 +5,9 @@
     import Quest from "../_lib/Quest";
     import { session, sessions } from "../store";
     import QuestList from "./QuestList.svelte";
+    import QuestData from "../_lib/types/QuestData";
+    import EnemySet from "../_lib/types/EnemySet";
+    import BezierData from "../_lib/types/BezierData";
 
     let inputElem: HTMLInputElement;
     export let hidden: boolean = false;
@@ -17,12 +20,23 @@
         let reader = new PlatinumFileReader(file.arrayBuffer);
         let result = await extract(reader);
         try {
-            $sessions = [...$sessions, new Quest(file.name, result)]
+            $sessions = [...$sessions, Quest.fromDAT(file.name, result)]
             $session = $sessions[$sessions.length - 1];
         } catch (e: any) {
             alert(`FAILED loading ${file.name}:\n${e.message}\n\nCheck console for more details.`);
             throw e;
         }
+    }
+
+    function newQuest() {
+        $sessions = [...$sessions, new Quest("0000", new QuestData(), new EnemySet([], []), new BezierData({
+            name: "BEZIER",
+            attributes: {},
+            value: "",
+            children: []
+        }))];
+        $session = $sessions[$sessions.length - 1];
+        console.log($session);
     }
 
     // For some reason, the map can be laggy to remove itself.
@@ -45,7 +59,7 @@
         <div class="row">
             <section>
                 <h2>Get started</h2>
-                <button class="transparentBtn" disabled>
+                <button class="transparentBtn" on:click={newQuest}>
                     <IconFilePlus />
                     New file...
                 </button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { IconCaretRightFilled, IconCodeAsterix, IconCodeDots, IconCodePlus, IconPencil, IconTrash } from "@tabler/icons-svelte";
+    import { IconCaretRightFilled, IconCheck, IconCodeAsterix, IconCodeDots, IconCodePlus, IconPencil, IconTrash } from "@tabler/icons-svelte";
     import type { TaskList } from "../../../_lib/types/QuestData";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import { slide } from "svelte/transition";
@@ -22,6 +22,16 @@
             if ($currentTask === i) $currentTask = null;
         }
     }
+
+    const colors = [
+        "white",
+        "#EF5350", // red
+        "#FFA726", // orange
+        "#FFEE58", // yellow
+        "#66BB6A", // green
+        "#42A5F5", // blue
+        "#AB47BC", // purple
+    ]
 </script>
 
 <div
@@ -30,7 +40,7 @@
     class:active={$currentTask == i}
     role="button"
     tabindex="0"
-    on:click={() => $currentTask = i}
+    on:click={() => $currentTask = $currentTask === i ? null : i}
     transition:slide={{duration: 100, easing: cubicInOut}}
 >
     <header>
@@ -50,7 +60,7 @@
                 <span translate="yes">{task.templateName}</span>
             {/if}
         </div>
-        <IconPencil color={task.TaskColor > 0 ? `var(--primary-${task.TaskColor * 100})` : "white"} />
+        <IconPencil color={colors[task.color] || "white"} />
     </header>
     {#if expanded}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -73,11 +83,21 @@
             label="Template name"
             bind:value={task.templateName}
         />
-        <NumberInput
-            label="Task color"
-            description="Not sure what this does."
-            bind:value={task.TaskColor}
-        />
+        <h2 class="sectionHeader">Cosmetic Color</h2>
+        <div class="taskColor">
+            {#each colors as color, i}
+                <button
+                    class="color"
+                    class:active={task.color === i}
+                    style={`background-color: ${color}; border-color: ${color}`}
+                    on:click={() => task.color = i}
+                >
+                {#if task.color === i}
+                    <IconCheck color="black" />
+                {/if} 
+                </button>
+            {/each}
+        </div>
         <button class="deleteBtn" on:click={confirmDelete}>
             <IconTrash />
             Delete task
@@ -94,6 +114,9 @@
     }
     .content {
         border-top: 1px solid #333;
+    }
+    .content h2.sectionHeader {
+        padding-left: 10px;
     }
     .taskList {
         width: calc(100% - 10px);
@@ -128,5 +151,21 @@
     button.deleteBtn:hover {
         background-color: var(--danger);
         color: white;
+    }
+    .taskColor {
+        display: flex;
+        gap: 5px;
+        margin: 10px 20px
+    }
+    .taskColor .color {
+        width: 100%;
+        height: 36px;
+        border-radius: 24px;
+        padding: 0;
+        border-width: 2px;
+        border-style: solid;
+    }
+    .taskColor .color:not(.active):not(:hover) {
+        border-color: #222 !important;
     }
 </style>

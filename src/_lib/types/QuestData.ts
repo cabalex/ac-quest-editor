@@ -19,11 +19,49 @@ export default class QuestData {
     saveFlags: string[];
     areas: AreaGroup[];
 
-    constructor(bxm: FileData) {
+    constructor(version?: number, tasks?: TaskList[], sub?: {
+        SetMainScenarioValueStr: string;
+        MinLevel: number;
+        MaxLevel: number;
+        bSetPlStartPos: boolean;
+        PlStartPos: Vector;
+        PlStartRotY: number;
+        bSetMainScenario: boolean;
+    }, questFlags?: string[], saveFlags?: string[], areas?: AreaGroup[]) {
+        if (version !== undefined && version !== 16) {
+            throw new Error(`Unsupported version (${version})! I only support version 16.`);
+        }
+        this.version = version || 16;
+        this.tasks = tasks || [];
+        this.sub = sub || {
+            SetMainScenarioValueStr: "case1_100",
+            MinLevel: 0,
+            MaxLevel: 0,
+            bSetPlStartPos: false,
+            PlStartPos: new Vector("1.000000 0.000000 0.000000 0.000000"),
+            PlStartRotY: 0,
+            bSetMainScenario: false
+        }
+        if (!questFlags || questFlags.length !== 64) {
+            // fallback
+            this.questFlags = Array(64).fill("").map((_, i) => `Flag${i.toString().padStart(2, "0")}`);
+        } else {
+            this.questFlags = questFlags;
+        }
+        if (!saveFlags || saveFlags.length !== 64) {
+            // fallback
+            this.saveFlags = Array(64).fill("").map((_, i) => `SaveFlag${i.toString().padStart(2, "0")}`);
+        } else {
+            this.saveFlags = saveFlags;
+        }
+        this.areas = areas || [];
+    }
+
+    static fromNode(bxm: FileData) {
         // BXM file
-        this.version = parseInt(bxm.data.children[0].value);
-        this.tasks = bxm.data.children[1].children.map(node => TaskList.fromNode(node));
-        this.sub = {
+        let version = parseInt(bxm.data.children[0].value);
+        let tasks = bxm.data.children[1].children.map(node => TaskList.fromNode(node));
+        let sub = {
             SetMainScenarioValueStr: bxm.data.children[2].attributes["SetMainScenarioValueStr"],
             MinLevel: parseInt(bxm.data.children[2].children[0].value),
             MaxLevel: parseInt(bxm.data.children[2].children[1].value),
@@ -33,9 +71,11 @@ export default class QuestData {
             bSetMainScenario: bxm.data.children[2].children[5].value == "1"
         }
 
-        this.questFlags = bxm.data.children[3].children.map(node => node.attributes["QuestFlagName"]);
-        this.saveFlags = bxm.data.children[4].children.map(node => node.attributes["SaveFlagName"]);
-        this.areas = bxm.data.children[5].children.map(node => AreaGroup.fromNode(node));
+        let questFlags = bxm.data.children[3].children.map(node => node.attributes["QuestFlagName"]);
+        let saveFlags = bxm.data.children[4].children.map(node => node.attributes["SaveFlagName"]);
+        let areas = bxm.data.children[5].children.map(node => AreaGroup.fromNode(node));
+
+        return new QuestData(version, tasks, sub, questFlags, saveFlags, areas);
     }
 
     repack(): FileData {
@@ -149,7 +189,7 @@ export class TaskList {
     templateName: string;
     enabled: boolean;
     workInAdvance: boolean;
-    TaskColor: number;
+    color: number;
 
     lineLists: Command[][];
 
@@ -158,7 +198,7 @@ export class TaskList {
         this.templateName = templateName;
         this.enabled = enabled;
         this.workInAdvance = workInAdvance;
-        this.TaskColor = taskColor;
+        this.color = taskColor;
         this.lineLists = lineLists;
     }
 
@@ -197,7 +237,7 @@ export class TaskList {
                 {
                     name: "TaskColor",
                     attributes: {},
-                    value: this.TaskColor.toString(),
+                    value: this.color.toString(),
                     children: []
                 },
                 {

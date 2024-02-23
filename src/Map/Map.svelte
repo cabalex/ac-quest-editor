@@ -1,7 +1,7 @@
 <script lang="ts">
     import Panzoom from '@panzoom/panzoom';
     import { onDestroy, onMount } from 'svelte';
-    import { questAreaLookup } from '../_lib/lookupTable';
+    import { questAreaLookup, questLookup } from '../_lib/lookupTable';
     import { currentTab, currentEm, session } from '../store';
     import { Em } from '../_lib/types/EnemySet';
 
@@ -19,7 +19,7 @@
         
         // Must use timeout to ensure these are set.
         setTimeout(() => {
-            panzoom.pan(-1800, -1000);
+            panzoom.pan(-1100, -875);
             panzoom.zoom(2);
         }, 0);
     })
@@ -43,6 +43,8 @@
         }
     }
 
+    const toMap = (coord: number) => 2200 + coord * 2;
+
     $: toggleOpen($currentTab);
     let cachedEm: Em|null = null;
 </script>
@@ -64,10 +66,33 @@
                     role="button"
                     tabindex="0"
                     on:click={(e) => {$currentTab = "enemySets"; $currentEm = em; e.stopPropagation()}}
-                    style={`top: ${2200 + em.Trans.x * 2}px; left: ${2200 - em.Trans.z * 2}px; background-color: hsl(${set.number * 10}, 50%, 60%)`}
-                />
+                    style={`top: ${toMap(em.Trans.x)}px; left: ${toMap(-em.Trans.z)}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
+                >
+                {#if (questLookup(em.Ids[0].toString(16), true) || "").startsWith("bga00")}
+                    <div class="wall" style={`width: ${em.Type * 2}px`} />
+                {/if}
+                </div>
             {/each}
         {/each}
+        <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
+            {#each ($session?.questData.areas || []) as areaGroup}
+                {#each areaGroup.groups as area}
+                    {#if area.type === 1}
+                    <polygon
+                        points={area.points.map(coord => `${toMap(-coord.z)},${toMap(coord.x)}`).join(" ")}
+                        style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
+                    />
+                    {:else}
+                    <circle
+                        cx={toMap(-area.center.z)}
+                        cy={toMap(area.center.x)}
+                        r={area.radius * 2}
+                        style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
+                    />
+                    {/if}
+                {/each}
+            {/each}
+        </svg>
     </div>
 </div>
 
@@ -90,11 +115,17 @@
         height: 4400px;
         width: 4400px;
     }
+    .map svg.areas {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
     .em {
         position: absolute;
         width: 4px;
         height: 4px;
         border-radius: 100%;
+        z-index: 1;
     }
     .em.nearby {
         outline: 1px solid var(--primary-400);
@@ -102,5 +133,13 @@
     .em.active {
         outline: 1px solid red;
         z-index: 3;
+    }
+    .wall {
+        background-color: red;
+        height: 2px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
     }
 </style>

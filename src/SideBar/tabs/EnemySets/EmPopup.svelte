@@ -4,7 +4,8 @@
     import type { Em } from "../../../_lib/types/EnemySet";
     import { fly } from "svelte/transition";
     import { cubicIn } from "svelte/easing";
-    import { IconInfoCircle, IconQuestionMark, IconSettingsCode, IconX } from "@tabler/icons-svelte";
+    import { IconHash, IconInfoCircle, IconQuestionMark, IconSettingsCode, IconX } from "@tabler/icons-svelte";
+    import { hashDropdownOptions } from "../../../Tasks/blocks";
     import VectorInput from "../../../assets/VectorInput.svelte";
     import NumberInput from "../../../assets/NumberInput.svelte";
 
@@ -12,7 +13,7 @@
 
     export let em: Em;
 
-    let tab = "about";
+    export let tab = "about";
 </script>
 
 <div class="emPopup" transition:fly|global={{x: -50, duration: 100, easing: cubicIn}}>
@@ -36,11 +37,22 @@
     </header>
     <div class="tabs">
         <button class="tab" class:active={tab === "about"} on:click={() => tab = "about"}><IconInfoCircle /></button>
+        <button class="tab" class:active={tab === "numbers"} on:click={() => tab = "numbers"}><IconHash /></button>
         <button class="tab" class:active={tab === "setters"} on:click={() => tab = "setters"}><IconSettingsCode /></button>
         <button class="tab" class:active={tab === "extras"} on:click={() => tab = "extras"}><IconQuestionMark /></button>
     </div>
     <div class="content">
         {#if tab === "about"}
+            <NumberInput
+                label="GroupPos"
+                bind:value={em.GroupPos}
+            />
+            <h2 class="sectionHeader">Primary Object - {questLookup(em.Ids[0].toString(16))}</h2>
+            <NumberInput
+                label="Id"
+                description={questLookup(em.Ids[0].toString(16), true)}
+                bind:value={em.Ids[0]}
+            />
             <VectorInput
                 label="Position"
                 bind:value={em.Trans}
@@ -53,22 +65,148 @@
                 label="Base Rotation"
                 bind:value={em.BaseRot}
             />
+            <h2 class="sectionHeader">Secondary Object - {questLookup(em.Ids[1].toString(16))}</h2>
+            <NumberInput
+                label="Id"
+                description={questLookup(em.Ids[1].toString(16), true)}
+                bind:value={em.Ids[1]}
+            />
+            <VectorInput
+                label="L Position"
+                bind:value={em.TransL}
+            />
+            <VectorInput
+                label="L Base Rotation"
+                bind:value={em.BaseRot}
+            />
+            <h2 class="sectionHeader">Temporary position</h2>
+            <VectorInput
+                label="Temp. pos"
+                bind:value={em.TmpPos}
+            />
+        {:else if tab === "numbers"}
+            <NumberInput
+                label="SetNo"
+                bind:value={em.SetNo}
+            />
+            <NumberInput
+                label="PathNo"
+                bind:value={em.PathNo}
+            />
+            <NumberInput
+                label="EscapeNo"
+                bind:value={em.EscapeNo}
+            />
+            <NumberInput
+                label="NoticeNo"
+                bind:value={em.NoticeNo}
+            />
+            <NumberInput
+                label="LvMin"
+                bind:value={em.LvMin}
+            />
+            <NumberInput
+                label="LvMax"
+                bind:value={em.LvMax}
+            />
+            <NumberInput
+                label="ParentId"
+                description={"0x" + em.ParentId.toString(16)}
+                bind:value={em.ParentId}
+            />
+            <NumberInput
+                label="PartsNo"
+                bind:value={em.PartsNo}
+            />
+            <NumberInput
+                label="HashNo"
+                bind:value={em.HashNo}
+            />
+            <NumberInput
+                label="ItemId"
+                bind:value={em.ItemId}
+            />
+            <NumberInput
+                label="GridDisp"
+                bind:value={em.GridDisp}
+            />
+            <NumberInput
+                label="EventSuspend"
+                bind:value={em.EventSuspend}
+            />
+            <NumberInput
+                label="SimpleSubspaceSuspend"
+                bind:value={em.SimpleSubspaceSuspend}
+            />
+        {:else if tab === "setters"}
+            <NumberInput
+                label="Type"
+                description={"0x" + em.Type.toString(16)}
+                bind:value={em.Type}
+            />
+            <NumberInput
+                label="SetType"
+                description={"0x" + em.SetType.toString(16) + " - Referenced by TalkScripts."}
+                bind:value={em.SetType}
+            />
+            <NumberInput
+                label="SetRtn"
+                description={"0x" + em.SetRtn.toString(16)}
+                bind:value={em.SetRtn}
+            />
+            <NumberInput
+                label="SetFlag"
+                description={"0x" + em.SetFlag.toString(16)}
+                bind:value={em.SetFlag}
+            />
+            <NumberInput
+                label="SetWait"
+                bind:value={em.SetWait}
+            />
+            <NumberInput
+                label="SetTimer"
+                bind:value={em.SetTimer}
+            />
+            <NumberInput
+                label="SetCounter"
+                bind:value={em.SetCounter}
+            />
+            <NumberInput
+                label="SetRadius"
+                bind:value={em.SetRadius}
+            />
         {:else if tab === "extras"}
             <NumberInput
                 label="ExSetTypeA"
+                description={"0x" + em.ExSetTypeA.toString(16)}
                 bind:value={em.ExSetTypeA}
             />
             <NumberInput
                 label="ExSetTypeB"
+                description={"0x" + em.ExSetTypeB.toString(16)}
                 bind:value={em.ExSetTypeB}
             />
             <NumberInput
                 label="ExSetTypeC"
+                description={"0x" + em.ExSetTypeC.toString(16)}
                 bind:value={em.ExSetTypeC}
             />
             <NumberInput
-                label="ExSetTypeD"
+                label="ExSetTypeC"
+                description={"0x" + em.ExSetTypeD.toString(16)}
                 bind:value={em.ExSetTypeD}
+            />
+            <NumberInput
+                label="ExSetAttr"
+                bind:value={em.ExSetAttr}
+            />
+            <NumberInput
+                label="ExSetRtn"
+                bind:value={em.ExSetRtn}
+            />
+            <NumberInput
+                label="ExSetFlag"
+                bind:value={em.ExSetFlag}
             />
         {/if}
     </div>
@@ -84,6 +222,7 @@
         background: #444;
         box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
         min-width: min(500px, max(200px, calc(100vw - 827px)));
+        max-height: calc(100% - 64px);
     }
     header {
         background-color: var(--primary-900);
@@ -125,5 +264,12 @@
     }
     .tab.active {
         background-color: #444;
+    }
+    .content {
+        max-height: calc(100vh - 200px);
+        overflow: auto;
+    }
+    .content .sectionHeader {
+        margin-left: 10px;
     }
 </style>

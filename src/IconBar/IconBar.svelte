@@ -1,29 +1,12 @@
 <script lang="ts">
     import { IconPlus } from '@tabler/icons-svelte';
     import { currentEm, currentTab, currentTask, session, sessions } from '../store';
-    import { slide } from 'svelte/transition';
-    import { lookup } from '../_lib/lookupTable';
-    import type Quest from '../_lib/Quest';
-
-    function switchTab(ses: Quest) {
-        $currentTab = ses.tab;
-        $currentEm = null;
-        $currentTask = null;
-        $session = ses;
-    }
+    import Icon from './Icon.svelte';
 </script>
 
 <div class="iconBar">
     {#each $sessions as ses, i}
-        <button
-            transition:slide={{duration: 100}}
-            title={lookup(`q${ses.id}`) || ses.id}
-            class="session"
-            class:active={$session == ses}
-            on:click={() => switchTab(ses)}
-        >
-            {ses.id}
-        </button>
+        <Icon ses={ses} />
     {/each}
     <button
         class="session"
@@ -72,5 +55,15 @@
     .session.active {
         background-color: #666;
         cursor: default;
+    }
+    .iconTooltip {
+        pointer-events: none;
+        position: fixed;
+        left: 70px;
+        transform: translateY(-20px);
+        z-index: 15;
+        background-color: #222;
+        padding: 5px;
+        border-radius: 5px;
     }
 </style>

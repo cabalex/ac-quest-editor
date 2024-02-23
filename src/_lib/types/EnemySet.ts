@@ -6,10 +6,17 @@ export default class EnemySet {
     sets: EmSet[];
     groupPos: GroupPos[];
 
-    constructor(bxm: FileData) {
+    constructor(sets: EmSet[], groupPos: GroupPos[]) {
+        this.sets = sets;
+        this.groupPos = groupPos;
+    }
+
+    static fromNode(bxm: FileData) {
         // BXM file
-        this.sets = bxm.data.children[0].children.map(set => EmSet.fromNode(set));
-        this.groupPos = bxm.data.children[1].children.map(pos => new GroupPos(pos));
+        let sets = bxm.data.children[0].children.map(set => EmSet.fromNode(set));
+        let groupPos = bxm.data.children[1].children.map(pos => new GroupPos(pos));
+
+        return new EnemySet(sets, groupPos);
     }
 
     repack() {
@@ -80,7 +87,7 @@ export class EmSet {
         }
         let number = parseInt(node.attributes["number"]);
         let name = node.attributes["name"];
-        let ems = node.children.map((child: Node) => new Em(child));
+        let ems = node.children.map((child: Node) => Em.fromNode(child));
 
         return new EmSet(name, number, ems, options);
     }
@@ -125,51 +132,100 @@ function numberToNode(name: string, number: number) {
 export class Em {
     SetNo: number;
     Ids: [number, number];
-    BaseRot: Vector;
-    BaseRotL: Vector;
-    Trans: Vector;
-    TransL: Vector;
-    Rotation: number;
-    SetType: number;
-    Type: number;
-    SetRtn: number;
-    SetFlag: number;
-    PathNo: number;
-    EscapeNo: number;
-    TmpPos: Vector;
-    ExSetTypeA: number;
-    ExSetTypeB: number;
-    ExSetTypeC: number;
-    ExSetTypeD: number;
-    ExSetAttr: number;
-    ExSetRtn: number;
-    ExSetFlag: number;
-    NoticeNo: number;
-    SetWait: number;
-    LvMin: number;
-    LvMax: number;
-    ParentId: number;
-    PartsNo: number;
-    HashNo: number;
-    ItemId: number;
-    SetTimer: number;
-    SetCounter: number;
-    SetRadius: number;
-    GroupPos: number;
-    GridDisp: number;
-    EventSuspend: number;
-    SimpleSubspaceSuspend: number;
+    BaseRot = new Vector();
+    BaseRotL = new Vector();
+    Trans = new Vector();
+    TransL = new Vector();
+    Rotation = 0;
+    SetType = 0;
+    Type = 0;
+    SetRtn = 0;
+    SetFlag = 0;
+    PathNo = 0;
+    EscapeNo = 0;
+    TmpPos = new Vector();
+    ExSetTypeA = 0;
+    ExSetTypeB = 0;
+    ExSetTypeC = 0;
+    ExSetTypeD = 0;
+    ExSetAttr = 0;
+    ExSetRtn = 0;
+    ExSetFlag = 0;
+    NoticeNo = 0;
+    SetWait = 0;
+    LvMin = 0;
+    LvMax = 0;
+    ParentId = 0xffffffff;
+    PartsNo = -1;
+    HashNo = 0;
+    ItemId = 0;
+    SetTimer = 0;
+    SetCounter = 0;
+    SetRadius = 0;
+    GroupPos = 0;
+    GridDisp = 0;
+    EventSuspend = 0;
+    SimpleSubspaceSuspend = 0;
 
-    constructor(node: Node) {
-        this.SetNo = parseInt(node.children[0].value);
-        this.Ids = [parseInt(node.children[1].value), parseInt(node.children[2].value)];
-        this.BaseRot = new Vector(node.children[3].value);
-        this.BaseRotL = new Vector(node.children[4].value);
-        this.Trans = new Vector(node.children[5].value);
-        this.TransL = new Vector(node.children[6].value);
-        [this.Rotation, this.SetType, this.Type, this.SetRtn, this.SetFlag, this.PathNo, this.EscapeNo] = node.children.slice(7, 14).map(nodeToNumber);
-        this.TmpPos = new Vector(node.children[14].value);
-        [this.ExSetTypeA, this.ExSetTypeB, this.ExSetTypeC, this.ExSetTypeD, this.ExSetAttr, this.ExSetRtn, this.ExSetFlag, this.NoticeNo, this.SetWait, this.LvMin, this.LvMax, this.ParentId, this.PartsNo, this.HashNo, this.ItemId, this.SetTimer, this.SetCounter, this.SetRadius, this.GroupPos, this.GridDisp, this.EventSuspend, this.SimpleSubspaceSuspend] = node.children.slice(15).map(nodeToNumber);
+    constructor(setNo: number, ids: [number, number], opts?: {
+        BaseRot?: Vector,
+        BaseRotL?: Vector,
+        Trans?: Vector,
+        TransL?: Vector,
+        Rotation?: number,
+        SetType?: number,
+        Type?: number,
+        SetRtn?: number,
+        SetFlag?: number,
+        PathNo?: number,
+        EscapeNo?: number,
+        TmpPos?: Vector,
+        ExSetTypeA?: number,
+        ExSetTypeB?: number,
+        ExSetTypeC?: number,
+        ExSetTypeD?: number,
+        ExSetAttr?: number,
+        ExSetRtn?: number,
+        ExSetFlag?: number,
+        NoticeNo?: number,
+        SetWait?: number,
+        LvMin?: number,
+        LvMax?: number,
+        ParentId?: number,
+        PartsNo?: number;
+        HashNo?: number,
+        ItemId?: number,
+        SetTimer?: number,
+        SetCounter?: number,
+        SetRadius?: number,
+        GroupPos?: number,
+        GridDisp?: number,
+        EventSuspend?: number,
+        SimpleSubspaceSuspend?: number,
+    }) {
+        this.SetNo = setNo;
+        this.Ids = ids;
+        // assign to opts - shhh
+        if (opts) {
+            for (let key of Object.keys(opts)) {
+                // @ts-ignore
+                this[key] = opts[key];
+            }
+        }
+    }
+
+    static fromNode(node: Node) {
+        let opts: any = {}
+        let setNo = parseInt(node.children[0].value);
+        let ids: [number, number] = [parseInt(node.children[1].value), parseInt(node.children[2].value)];
+        opts.BaseRot = new Vector(node.children[3].value);
+        opts.BaseRotL = new Vector(node.children[4].value);
+        opts.Trans = new Vector(node.children[5].value);
+        opts.TransL = new Vector(node.children[6].value);
+        [opts.Rotation, opts.SetType, opts.Type, opts.SetRtn, opts.SetFlag, opts.PathNo, opts.EscapeNo] = node.children.slice(7, 14).map(nodeToNumber);
+        opts.TmpPos = new Vector(node.children[14].value);
+        [opts.ExSetTypeA, opts.ExSetTypeB, opts.ExSetTypeC, opts.ExSetTypeD, opts.ExSetAttr, opts.ExSetRtn, opts.ExSetFlag, opts.NoticeNo, opts.SetWait, opts.LvMin, opts.LvMax, opts.ParentId, opts.PartsNo, opts.HashNo, opts.ItemId, opts.SetTimer, opts.SetCounter, opts.SetRadius, opts.GroupPos, opts.GridDisp, opts.EventSuspend, opts.SimpleSubspaceSuspend] = node.children.slice(15).map(nodeToNumber);
+        return new Em(setNo, ids, opts);
     }
 
     repack() {
