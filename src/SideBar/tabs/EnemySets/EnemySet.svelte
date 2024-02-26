@@ -63,7 +63,7 @@
     let references = referencedTasks();
 
     // @ts-ignore
-    $: if (set.ems.includes($currentEm)) scroll();
+    $: if (set.ems.includes($currentEm)) setTimeout(() => scroll(), 0);
 </script>
 
 <div class="emSets" bind:this={elem}>
@@ -83,7 +83,7 @@
         {#each set.ems as em}
             <button class="em" class:active={$currentEm == em} on:click={focusEm.bind(null, em)}>
                 <IconUser />
-                <span>{questLookup(em.Ids[0].toString(16))}</span>
+                <span>{questLookup(em.Id.toString(16))}</span>
                 <IconChevronRight />
             </button>
         {/each}

@@ -19,6 +19,12 @@ export default class EnemySet {
         return new EnemySet(sets, groupPos);
     }
 
+    getEmByArgs(args: {[key: string]: any}) {
+        let arr: Em[] = [];
+        this.sets.forEach(set => arr.push(...set.getEmByArgs(args)));
+        return arr;
+    }
+
     repack() {
         const node: Node = {
             name: "EmSetRoot",
@@ -92,6 +98,16 @@ export class EmSet {
         return new EmSet(name, number, ems, options);
     }
 
+    getEmByArgs(args: {[key: string]: any}) {
+        return this.ems.filter(x => {
+            for (let key of Object.keys(args)) {
+                // @ts-ignore
+                if (x[key] != args[key]) return false;
+            }
+            return true;
+        })
+    }
+
     repack() {
         // recalculate hash
         this.groupNameHash = b_crc32(this.name.toLowerCase()) & 0x7FFFFFFF;
@@ -131,14 +147,14 @@ function numberToNode(name: string, number: number) {
 
 export class Em {
     SetNo: number;
-    Ids: [number, number];
+    Id: number;
+    IdL: number;
     BaseRot = new Vector();
     BaseRotL = new Vector();
     Trans = new Vector();
     TransL = new Vector();
     Rotation = 0;
     SetType = 0;
-    Type = 0;
     SetRtn = 0;
     SetFlag = 0;
     PathNo = 0;
@@ -167,6 +183,9 @@ export class Em {
     EventSuspend = 0;
     SimpleSubspaceSuspend = 0;
 
+    // actual parameters
+    secondaryObjectEnabled = false;
+
     constructor(setNo: number, ids: [number, number], opts?: {
         BaseRot?: Vector,
         BaseRotL?: Vector,
@@ -174,7 +193,6 @@ export class Em {
         TransL?: Vector,
         Rotation?: number,
         SetType?: number,
-        Type?: number,
         SetRtn?: number,
         SetFlag?: number,
         PathNo?: number,
@@ -204,13 +222,22 @@ export class Em {
         SimpleSubspaceSuspend?: number,
     }) {
         this.SetNo = setNo;
-        this.Ids = ids;
+        this.Id = ids[0];
+        this.IdL = ids[1];
         // assign to opts - shhh
         if (opts) {
             for (let key of Object.keys(opts)) {
                 // @ts-ignore
                 this[key] = opts[key];
             }
+        }
+
+        if (
+            this.IdL != this.Id ||
+            this.TransL.repack() !== this.Trans.repack() ||
+            this.BaseRotL.repack() !== this.BaseRot.repack()
+        ) {
+            this.secondaryObjectEnabled = true;
         }
     }
 
@@ -235,15 +262,16 @@ export class Em {
             value: "",
             children: [
                 numberToNode("SetNo", this.SetNo),
-                numberToNode("Id", this.Ids[0]),
-                numberToNode("Id", this.Ids[1]),
+                numberToNode("Id", this.Id),
+                numberToNode("Id", this.secondaryObjectEnabled ? this.IdL : this.Id),
                 { name: "BaseRot", attributes: {}, value: this.BaseRot.repack(), children: [] },
-                { name: "BaseRotL", attributes: {}, value: this.BaseRotL.repack(), children: [] },
+                { name: "BaseRotL", attributes: {}, value: this.secondaryObjectEnabled ? this.BaseRotL.repack() : this.BaseRot.repack(), children: [] },
                 { name: "Trans", attributes: {}, value: this.Trans.repack(), children: [] },
-                { name: "TransL", attributes: {}, value: this.TransL.repack(), children: [] },
+                { name: "TransL", attributes: {}, value: this.secondaryObjectEnabled ? this.TransL.repack() : this.Trans.repack(), children: [] },
                 { name: "Rotation", attributes: {}, value: this.Rotation.toFixed(6), children: [] },
+                // SetType and Type are always the same
                 numberToNode("SetType", this.SetType),
-                numberToNode("Type", this.Type),
+                numberToNode("Type", this.SetType),
                 numberToNode("SetRtn", this.SetRtn),
                 numberToNode("SetFlag", this.SetFlag),
                 numberToNode("PathNo", this.PathNo),

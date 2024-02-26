@@ -1562,26 +1562,26 @@ export function lookup(name: string) {
         }
         return name;
     }
-    switch (formatted.substr(0, 2)) {
+    switch (formatted.slice(0, 2)) {
         case "em":
             if (em[formatted as never] != undefined) {
-                return em[formatted as never] + name.substr(6);
+                return em[formatted as never] + name.slice(6);
             }
         case "pl":
             if (pl[formatted as never] != undefined) {
-                return pl[formatted as never] + name.substr(6);
+                return pl[formatted as never] + name.slice(6);
             }
         case "wp":
             if (wp[formatted as never] != undefined) {
-                return wp[formatted as never] + name.substr(6);
+                return wp[formatted as never] + name.slice(6);
             }
         case "bg":
             if (bg[formatted as never] != undefined) {
-                return bg[formatted as never] + name.substr(6);
+                return bg[formatted as never] + name.slice(6);
             }
         case "ba":
             if (ba[formatted as never] != undefined) {
-                return ba[formatted as never] + name.substr(6);
+                return ba[formatted as never] + name.slice(6);
             }
         default:
             return name;
@@ -1592,15 +1592,15 @@ export function questUnlookup(id: string) {
     if (!id) {
       return
     }
-    switch(id.substr(0, 2)) {
+    switch(id.toLowerCase().slice(0, 2)) {
       case "pl":
-        return parseInt("1" + id.substr(2, 5), 16);
+        return parseInt("1" + id.slice(2, 6), 16);
       case "em": // 2 == em
-        return parseInt("2" + id.substr(2, 5), 16);
+        return parseInt("2" + id.slice(2, 6), 16);
       case "bg":
-        return parseInt("C" + id.substr(2, 5), 16);
+        return parseInt("C" + id.slice(2, 6), 16);
       case "ba":
-        return parseInt("F" + id.substr(2, 5), 16);
+        return parseInt("F" + id.slice(2, 6), 16);
       default:
         return parseInt(id, 16);
     }
@@ -1639,6 +1639,8 @@ export function questLookup(id: string, returnId=false) {
           return "em" + id.substr(1, 4);
         }
         return lookup("em" + id.substr(1, 4));
+      // case 4 is something with a balloon in it.
+      // See "File 06 The Lost Balloon".
       case "c":
       case "e":
         if (returnId) {

@@ -106,21 +106,21 @@ export class Script {
 
 export class StateInfo {
     triggers: string[];
-    no: string;
+    number: number;
     priority: number;
     commands: StateCommand[];
 
-    constructor(triggers: string[], no: string, priority: number, commands: StateCommand[]) {
+    constructor(triggers: string[], number: number, priority: number, commands: StateCommand[]) {
         this.triggers = triggers;
-        this.no = no;
+        this.number = number;
         this.priority = priority;
         this.commands = commands;
     }
 
     static fromNode(node: Node) {
         let triggers = node.children[0].children.map(x => x.value);
-        let no = node.children[1].value;
-        let priority = parseInt(node.children[2].value);
+        let no = parseInt(node.children[1].value.slice(1));
+        let priority = parseInt(node.children[2].value || "0");
         let commands = [];
         let lastCommandType = 0;
         for (let i = 3; i < node.children.length; i++) {
@@ -172,8 +172,8 @@ export class StateInfo {
             value: "",
             children: [
                 triggers,
-                { name: "No", attributes: {}, value: this.no, children: [] },
-                { name: "Priority", attributes: {}, value: this.priority.toString(), children: [] },
+                { name: "No", attributes: {}, value: "s" + this.number.toString(), children: [] },
+                { name: "Priority", attributes: {}, value: this.priority ? this.priority.toString() : "", children: [] },
                 ...commands
             ]
         }

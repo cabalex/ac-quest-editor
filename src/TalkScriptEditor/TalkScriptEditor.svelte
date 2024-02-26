@@ -5,6 +5,8 @@
     import StateCommand from "./StateCommand.svelte";
     import { IconPlus } from "@tabler/icons-svelte";
     import { StateCommand as StateCommandObject } from "../_lib/types/TalkScript";
+    import TextInput from "../assets/TextInput.svelte";
+    import NumberInput from "../assets/NumberInput.svelte";
 
     export let script: Script;
 </script>
@@ -14,7 +16,12 @@
         <h2>TalkScript Editor (BETA)</h2>
     </header>
     {#each script.stateInfos as stateInfo}
-        <h2 class="stateInfoHeader">State {stateInfo.no}</h2>
+        <h2 class="stateInfoHeader">State {stateInfo.number}</h2>
+        <NumberInput label="State No" bind:value={stateInfo.number} />
+        <NumberInput label="Priority" bind:value={stateInfo.priority} />
+        {#each stateInfo.triggers as trigger}
+            <TextInput label="Trigger" bind:value={trigger} />
+        {/each}
         {#each stateInfo.commands as command}
             <StateCommand command={command} script={script} />
         {/each}

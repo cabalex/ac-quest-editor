@@ -28,7 +28,7 @@
     {#if $session !== null}
         <SideBar />
         {#if $currentTab == "enemySets" && $currentEm !== null}
-            {#key $currentEm.Ids[0]}
+            {#key $currentEm.Id}
                 <EmPopup bind:tab={emTab} em={$currentEm} on:close={() => $currentEm = null} />            
             {/key}
         {/if}

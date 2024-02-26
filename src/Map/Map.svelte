@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Panzoom from '@panzoom/panzoom';
+    import Panzoom, { type PanzoomObject } from '@panzoom/panzoom';
     import { onDestroy, onMount } from 'svelte';
     import { questAreaLookup, questLookup } from '../_lib/lookupTable';
     import { currentTab, currentEm, session } from '../store';
@@ -8,7 +8,7 @@
     let mapElem: HTMLDivElement;
 
     $: map = questAreaLookup($session?.id || "0") || "r300";
-    let panzoom: Panzoom;
+    let panzoom: PanzoomObject;
 
     onMount(() => {
         panzoom = Panzoom(mapElem, {
@@ -43,6 +43,26 @@
         }
     }
 
+    let panToEmEnabled = true;
+    function panToEm(em: Em) {
+        if (!panToEmEnabled) return;
+        let zoom = panzoom.getScale();
+        panzoom.pan(
+            -1100 - (-em.Trans.z * 2) + (window.innerWidth - 1300) / zoom / 2,
+            -1100 - (em.Trans.x * 2) + window.innerHeight / zoom / 2,
+            { animate: true }
+        );
+    }
+
+    function clickEm(em: Em) {
+        panToEmEnabled = false;
+        $currentEm = em;
+        $currentTab = "enemySets";
+        setTimeout(() => panToEmEnabled = true, 0);
+    }
+
+    $: if ($currentEm && !cachedEm) panToEm($currentEm);
+
     const toMap = (coord: number) => 2200 + coord * 2;
 
     $: toggleOpen($currentTab);
@@ -54,7 +74,7 @@
         class="map"
         bind:this={mapElem}
         on:panzoomstart={() => {cachedEm = $currentEm; $currentEm = null}}
-        on:panzoomend={() => { $currentEm = cachedEm; cachedEm = null}}
+        on:panzoomend={() => { panToEmEnabled = false; $currentEm = cachedEm; cachedEm = null; setTimeout(() => panToEmEnabled = true, 0)}}
     >
         <img src={`./maps/${map.slice(1)}.svg`} alt="Map" />
         {#each ($session?.enemySet.sets || []) as set}
@@ -62,16 +82,28 @@
                 <div
                     class="em"
                     class:active={$currentEm === em || cachedEm === em}
-                    class:nearby={set.ems.includes($currentEm || cachedEm || false)}
+                    class:nearby={($currentEm && cachedEm) && set.ems.includes($currentEm || cachedEm)}
                     role="button"
                     tabindex="0"
-                    on:click={(e) => {$currentTab = "enemySets"; $currentEm = em; e.stopPropagation()}}
-                    style={`top: ${toMap(em.Trans.x)}px; left: ${toMap(-em.Trans.z)}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
+                    on:click={(e) => {clickEm(em); e.stopPropagation()}}
+                    style={`top: ${toMap(em.Trans.x) - 2}px; left: ${toMap(-em.Trans.z) - 2}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
                 >
-                {#if (questLookup(em.Ids[0].toString(16), true) || "").startsWith("bga00")}
-                    <div class="wall" style={`width: ${em.Type * 2}px`} />
+                {#if (questLookup(em.Id.toString(16), true) || "").startsWith("bga00") ||
+                    (questLookup(em.Id.toString(16), true) || "").startsWith("bga03")}
+                    <div class="wall" style={`width: ${em.SetType * 2}px`} />
                 {/if}
                 </div>
+                {#if em.secondaryObjectEnabled}
+                <div
+                    class="em secondary"
+                    class:active={$currentEm === em || cachedEm === em}
+                    class:nearby={($currentEm && cachedEm) && set.ems.includes($currentEm || cachedEm)}
+                    role="button"
+                    tabindex="0"
+                    on:click={(e) => {clickEm(em); e.stopPropagation()}}
+                    style={`top: ${toMap(em.TransL.x) - 2}px; left: ${toMap(-em.TransL.z) - 2}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
+                />
+                {/if}
             {/each}
         {/each}
         <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
@@ -134,6 +166,15 @@
         outline: 1px solid red;
         z-index: 3;
     }
+    .em.secondary:before {
+        content: "L";
+        font-size: 6px;
+        position: absolute;
+        top: -2px;
+        left: 0.5px;
+        font-weight: bold;
+        color: #333;
+    }
     .wall {
         background-color: red;
         height: 2px;
@@ -141,5 +182,6 @@
         top: 50%;
         left: 50%;
         transform: translateX(-50%) translateY(-50%);
+        z-index: -1;
     }
 </style>

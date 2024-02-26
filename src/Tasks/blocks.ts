@@ -384,7 +384,7 @@ export const ifBlocks = [
     ),
 
     ifDefine("if-22", "If dialogue box %1", [
-        trueFalse("IFbCheck", "closed", "open")]
+        trueFalse("bCheck", "closed", "open")]
     ),
 
     ifDefine("if-26", "If Player is %1 an Astral Plane arena", [

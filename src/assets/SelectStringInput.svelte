@@ -1,11 +1,15 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     export let label: string;
     export let description: string|null = null;
 
-    export let value = 0;
+    export let value = "";
+
+    const dispatch = createEventDispatcher();
 
     function onChange(e: any) {
-        value = parseInt(e.target.value);
+        value = e.target.value;
+        dispatch("change", [value, e]);
     }
 </script>
 
@@ -16,7 +20,7 @@
             <p>{description}</p>
         {/if}
     </div>
-    <select value={value.toString()} on:change={onChange}>
+    <select value={value} on:change={onChange}>
         <slot />
     </select>
 </div>

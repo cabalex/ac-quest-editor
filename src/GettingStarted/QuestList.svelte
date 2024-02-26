@@ -4,7 +4,7 @@
     import extract, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
     import extract_partial from "../_lib/files/PKZ/extract_partial";
     import PlatinumFileReader from "../_lib/files/PlatinumFileReader";
-    import { IconExclamationCircle, IconFile, IconSearch } from "@tabler/icons-svelte";
+    import { IconExclamationCircle, IconFile, IconSearch, IconX } from "@tabler/icons-svelte";
     import Loading from "../assets/Loading.svelte";
     import { questsCache } from "../store";
     import { lookup } from "../_lib/lookupTable";
@@ -60,6 +60,7 @@
         fileData?.files : 
         fileData?.files.filter(f => f.name.toLowerCase().includes(query.toLowerCase()) || lookup(f.name).toLowerCase().includes(query.toLowerCase()));
 
+    // @ts-ignore
     $: if (scrollElem && list) document.querySelector("svelte-virtual-list-viewport").scrollTop = 0;
 </script>
 
@@ -67,6 +68,11 @@
     <div class="searchBar">
         <IconSearch />
         <input bind:value={query} type="text" placeholder={`Search ${fileData.files.length} quests...`} />
+        {#if query.length}
+            <button class="transparentBtn" style="padding: 5px; color: white" on:click={() => query = ""}>
+                <IconX />
+            </button>
+        {/if}
     </div>
     <VirtualList bind:this={scrollElem} items={list} height={"300px"} let:item>
         <button class="transparentBtn" on:click={clickFile.bind(null, item)} style="width: 400px">

@@ -6,7 +6,7 @@ import extractCSV from "./files/CSV/extract";
 import repackCSV from "./files/CSV/repack";
 
 import BezierData from "./types/BezierData";
-import EnemySet from "./types/EnemySet";
+import EnemySet, { Em } from "./types/EnemySet";
 import ExData from "./types/ExData";
 import QuestData from "./types/QuestData";
 import ReliefSupplies from "./types/ReliefSupplies";
@@ -17,7 +17,8 @@ import SubtitleInfo from "./types/SubtitleInfo";
 import TalkCondition from "./types/TalkCondition";
 import TalkData from "./types/TalkData";
 import TalkFlag from "./types/TalkFlag";
-import TalkScript from "./types/TalkScript";
+import TalkScript, { Script } from "./types/TalkScript";
+import { questLookup, questUnlookup } from "./lookupTable";
 
 export default class Quest {
     id: string;
@@ -160,5 +161,58 @@ export default class Quest {
 
 
         return await repack({ files });
+    }
+
+    changeTalkScriptReference(script: Script, em: Em) {
+        if (!this.talkScript) {
+            throw new Error("No talk script found");
+        }
+
+        // check if reference still exists after detaching this one
+        let isPreviousIDStillAttached = false;
+        // check if new ID is already attached to something (don't change it!)
+        let isNewIDAlreadyAttached = false;
+        for (let s of this.talkScript.scripts) {
+            if (s !== script && s.objId.toUpperCase() == script.objId.toUpperCase()) {
+                isPreviousIDStillAttached = true;
+            } else if (
+                s !== script &&
+                questLookup(em.Id.toString(16), true)?.toUpperCase() == s.objId.toUpperCase() &&
+                s.setType == em.SetType
+            ) {
+                isNewIDAlreadyAttached = true;
+            }
+        }
+
+
+        let oldEm = this.enemySet.getEmByArgs({ SetType: script.setType, Id: questUnlookup(script.objId) })[0];
+
+        if (oldEm && isPreviousIDStillAttached) {
+            oldEm.SetType = 0;
+        } else if (!oldEm) {
+            console.warn("changeTalkScriptReference: Previous Em not found when deleting old SetType.");
+        }
+
+        if (isNewIDAlreadyAttached) {
+            script.setType = em.SetType;
+        } else {
+            // calculate a new unique ID
+            let highestID = 0;
+            for (let set of this.enemySet.sets) {
+                for (let e of set.ems) {
+                    if (e !== em || isPreviousIDStillAttached) {
+                        highestID = Math.max(highestID, e.SetType);
+                    } else if (e === em && !isPreviousIDStillAttached) {
+                        // reset ID
+                        e.SetType = 0;
+                    } else {
+                        highestID = Math.max(highestID, e.SetType);
+                    }
+                }
+            }
+            script.setType = em.SetType = highestID + 1;
+        }
+
+        script.objId = questLookup(em.Id.toString(16), true)?.toUpperCase() || "OBJID_NOT_FOUND";
     }
 }

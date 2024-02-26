@@ -2,14 +2,14 @@
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
-    import { IconCaretRightFilled, IconCode, IconPencil, IconScript, IconTrash, IconUser } from "@tabler/icons-svelte";
+    import { IconCaretRightFilled, IconCode, IconMessage, IconMessage2, IconMessageCode, IconPencil, IconScript, IconTrash, IconUser } from "@tabler/icons-svelte";
     import type { Script } from "../../../_lib/types/TalkScript";
-    import NumberInput from "../../../assets/NumberInput.svelte";
     import TextInput from "../../../assets/TextInput.svelte";
     import { currentTalkScript, session, currentTask, currentTab, currentEm } from "../../../store";
-  import SelectInput from "../../../assets/SelectInput.svelte";
-  import { questLookup } from "../../../_lib/lookupTable";
-  import type { Em } from "../../../_lib/types/EnemySet";
+    import { questLookup } from "../../../_lib/lookupTable";
+    import type { Em } from "../../../_lib/types/EnemySet";
+    import SelectNumberInput from "../../../assets/SelectNumberInput.svelte";
+    import SelectStringInput from "../../../assets/SelectStringInput.svelte";
 
     export let script: Script;
 
@@ -52,17 +52,53 @@
         for (let emSet of $session.enemySet.sets) {
             for (let em of emSet.ems) {
                 if (
-                    questLookup(em.Ids[0].toString(16), true)?.toUpperCase() === emName.toUpperCase() &&
+                    questLookup(em.Id.toString(16), true)?.toUpperCase() === emName.toUpperCase() &&
                     em.SetType === type
                 )
-                    return [`${emSet.name} (${emSet.number})`, em];
+                    return [`${emSet.name} (${emSet.number}) > ${questLookup(em.Id.toString(16))}`, em];
             }
         }
         return null;
     }
 
+    function changeEmReference(e: any) {
+        // get the optgroup that the option is in
+        let opt = e.detail[1].target.querySelector(`option[value="${e.detail[0]}"]`);
+        let optgroup = opt?.parentElement?.label;
+        if (opt && optgroup) {
+            let index = parseInt(opt.dataset.index);
+            let emSet = $session?.enemySet.sets.find(set => set.number === parseInt(optgroup));
+            let em = emSet?.ems[index];
+            if (emSet && em) {
+                $session?.changeTalkScriptReference(script, em);
+                // since this mutates the ems and script, we need to
+                // refresh the state in component
+                script.objId = script.objId;
+                emDropdown = emDropdownOptions();
+            }
+        }
+    }
+
     $: references = script.triggerType === 1 ? taskReferences() : [];
     $: emReference = script.triggerType !== 1 ? getEmReference(script.objId, script.setType) : null;
+
+
+    function emDropdownOptions(): {[key: string]: [string, string][]} {
+        let options: {[key: string]: [string, string][]} = {};
+        for (let set of ($session?.enemySet.sets || [])) {
+            let arr: [string, string][] = [];
+            for (let em of set.ems) {
+                arr.push([
+                    `${questLookup(em.Id.toString(16), true)?.toLowerCase()}-${em.SetType}`,
+                    `${questLookup(em.Id.toString(16))}`
+                ]);
+            }
+            options[`${set.number} - ${set.name}`] = arr;
+        }
+        return options;
+    }
+
+    let emDropdown = emDropdownOptions();
 </script>
 
 <div
@@ -78,55 +114,66 @@
         <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
             <IconCaretRightFilled />
         </button>
-        <IconScript />
+        {#if script.triggerType === 0}
+            <IconMessage />
+        {:else if script.triggerType === 1}
+            <IconMessageCode />
+        {:else}
+            <IconMessage2 />
+        {/if}
         <div class="text">
-            <h3>{script.objId}</h3>
             {#if script.triggerType === 1}
+            <h3>{script.objId}</h3>
             <span>{script.questId}</span>
             {:else}
+            <h3 translate="yes">{(emReference || [script.objId])[0]}</h3>
             <span>{script.questId} - SetType {script.setType}</span>
             {/if}
         </div>
         <IconPencil />
     </header>
+    {#if references.length > 0}
     <div class="referencedTasks">
-        {#if references}
             {#each references as reference}
-                <button class="referencedTask" on:click={() => { $currentTask = reference[1]; $currentTab = "tasks"}}>
+                <button class="referencedTask" on:click={(e) => { $currentTask = reference[1]; $currentTab = "tasks"; e.stopPropagation()}}>
                     <IconCode />
                     <span translate="yes">{reference[0]}</span>
                 </button>
             {/each}
-        {/if}
-        {#if emReference}
-        <button class="referencedTask" on:click={() => { $currentEm = (emReference || [null, null])[1]; $currentTab = "enemySets"}}>
-            <IconUser />
-            <span translate="yes">{emReference[0]}</span>
-        </button>
-        {/if}
     </div>
+    {/if}
     {#if expanded}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}} on:click={(e) => e.stopPropagation()}>
-        <SelectInput
+        <SelectNumberInput
             label="Triggered by"
             bind:value={script.triggerType}
         >
             <option value="0">NPC interaction</option>
             <option value="1">Task</option>
             <option value="2">Speech bubble</option>
-        </SelectInput>
+        </SelectNumberInput>
         {#if script.triggerType !== 1}
-            <TextInput
-                label="Object ID"
-                description="Use normal IDs, e.g. pl2002."
-                bind:value={script.objId}
-            />
-            <NumberInput
-                label="SetType"
-                description="A matching entity in the Enemy Sets should have this value. This can be 0 if you only have one entity of this name."
-                bind:value={script.setType}
-            />
+            <SelectStringInput
+                value={`${script.objId.toLowerCase()}-${script.setType}`}
+                label="Object to reference"
+                on:change={changeEmReference}
+            >
+                {#each Object.keys(emDropdown) as set}
+                    <optgroup label={set}>
+                        {#each emDropdown[set] as em, i}
+                            <option data-index={i} value={em[0]}>{em[1]}</option>
+                        {/each}
+                    </optgroup>
+                {/each}
+            </SelectStringInput>
+            {#if emReference}
+                <h2 class="sectionHeader">Jump to object</h2>
+                <button class="referencedTask" style="margin: 10px" on:click={() => { $currentEm = (emReference || [null, null])[1]; $currentTab = "enemySets"}}>
+                    <IconUser />
+                    <span translate="yes">{emReference[0]}</span>
+                </button>
+            {/if}
         {:else}
             <TextInput
                 label="Hex key"
@@ -141,7 +188,7 @@
         />
         <button class="deleteBtn" on:click={confirmDelete}>
             <IconTrash />
-            Delete task
+            Delete Talk Script
         </button>
     </div>
     {/if}
@@ -155,9 +202,6 @@
     }
     .content {
         border-top: 1px solid #333;
-    }
-    .content h2.sectionHeader {
-        padding-left: 10px;
     }
     .script {
         width: calc(100% - 10px);
@@ -202,5 +246,8 @@
         padding: 5px;
         margin: 5px;
         text-align: left;
+    }
+    .content h2.sectionHeader {
+        margin-left: 10px;
     }
 </style>
