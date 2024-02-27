@@ -4,22 +4,24 @@
     import { questAreaLookup, questLookup } from '../_lib/lookupTable';
     import { currentTab, currentEm, session } from '../store';
     import { Em } from '../_lib/types/EnemySet';
+    import MapEm from './MapEm.svelte';
+  import Vector from '../_lib/Vector';
 
     let mapElem: HTMLDivElement;
 
     $: map = questAreaLookup($session?.id || "0") || "r300";
     let panzoom: PanzoomObject;
 
+    let zeroVector = new Vector();
     onMount(() => {
         panzoom = Panzoom(mapElem, {
             maxScale: 10,
-
         })
         mapElem.addEventListener('wheel', panzoom.zoomWithWheel)
         
         // Must use timeout to ensure these are set.
         setTimeout(() => {
-            panzoom.pan(-1100, -875);
+            panzoom.reset();
             panzoom.zoom(2);
         }, 0);
     })
@@ -32,33 +34,27 @@
     let lastOpen = false;
     function toggleOpen(tab: string|null) {
         if (!panzoom || (tab === null && !lastOpen) || (tab !== null && lastOpen)) return;
-        let pan = panzoom.getPan();
         let zoom = panzoom.getScale();
         if ($currentTab === null) {
-            panzoom?.pan(pan.x - 210 / zoom, pan.y, { animate: true });
+            panzoom?.pan(-210 / zoom, 0, { animate: true, relative: true });
             lastOpen = false;
         } else {
-            panzoom?.pan(pan.x + 210 / zoom, pan.y, { animate: true });
+            panzoom?.pan(210 / zoom, 0, { animate: true, relative: true });
             lastOpen = true;
         }
     }
 
     let panToEmEnabled = true;
     function panToEm(em: Em) {
-        if (!panToEmEnabled) return;
-        let zoom = panzoom.getScale();
+        if (!panToEmEnabled || !panzoom) return;
+        // TODO: THIS IS A HACK. Figure out how panzoom's panning works.
+        // I've tried so many options and none of them work... just hardcode the zoom and width, i guess??
+        panzoom.zoom(2);
         panzoom.pan(
-            -1100 - (-em.Trans.z * 2) + (window.innerWidth - 1300) / zoom / 2,
-            -1100 - (em.Trans.x * 2) + window.innerHeight / zoom / 2,
-            { animate: true }
+            (em.Trans.z * 2) - (window.innerWidth / 2 + 1100) / 2,
+            (-em.Trans.x * 2) - (window.innerHeight / 2 + 1300) / 2,
+            { animate: true, focal: {x: toMap(em.Trans.z), y: toMap(-em.Trans.x)} }
         );
-    }
-
-    function clickEm(em: Em) {
-        panToEmEnabled = false;
-        $currentEm = em;
-        $currentTab = "enemySets";
-        setTimeout(() => panToEmEnabled = true, 0);
     }
 
     $: if ($currentEm && !cachedEm) panToEm($currentEm);
@@ -67,43 +63,31 @@
 
     $: toggleOpen($currentTab);
     let cachedEm: Em|null = null;
+
+    let x = 0;
+    let y = 0;
+    function calculateMouseCoords(e) {
+        let scale = panzoom.getScale();
+        let pan = panzoom.getPan();
+        //console.log(pan.x, pan.y)
+        x = ((e.clientX - (window.innerWidth - 1300) / 2) / scale + pan.x);
+        y = (e.clientY / scale - pan.y);
+    }
 </script>
 
 <div class="mapContainer" class:full={$currentTab === null}>
     <div
         class="map"
         bind:this={mapElem}
+        role="img"
+        on:mousemove={calculateMouseCoords}
         on:panzoomstart={() => {cachedEm = $currentEm; $currentEm = null}}
         on:panzoomend={() => { panToEmEnabled = false; $currentEm = cachedEm; cachedEm = null; setTimeout(() => panToEmEnabled = true, 0)}}
     >
         <img src={`./maps/${map.slice(1)}.svg`} alt="Map" />
         {#each ($session?.enemySet.sets || []) as set}
             {#each set.ems as em}
-                <div
-                    class="em"
-                    class:active={$currentEm === em || cachedEm === em}
-                    class:nearby={($currentEm && cachedEm) && set.ems.includes($currentEm || cachedEm)}
-                    role="button"
-                    tabindex="0"
-                    on:click={(e) => {clickEm(em); e.stopPropagation()}}
-                    style={`top: ${toMap(em.Trans.x) - 2}px; left: ${toMap(-em.Trans.z) - 2}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
-                >
-                {#if (questLookup(em.Id.toString(16), true) || "").startsWith("bga00") ||
-                    (questLookup(em.Id.toString(16), true) || "").startsWith("bga03")}
-                    <div class="wall" style={`width: ${em.SetType * 2}px`} />
-                {/if}
-                </div>
-                {#if em.secondaryObjectEnabled}
-                <div
-                    class="em secondary"
-                    class:active={$currentEm === em || cachedEm === em}
-                    class:nearby={($currentEm && cachedEm) && set.ems.includes($currentEm || cachedEm)}
-                    role="button"
-                    tabindex="0"
-                    on:click={(e) => {clickEm(em); e.stopPropagation()}}
-                    style={`top: ${toMap(em.TransL.x) - 2}px; left: ${toMap(-em.TransL.z) - 2}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
-                />
-                {/if}
+                <MapEm em={em} set={set} cachedEm={cachedEm} on:click={() => { $currentTab = "enemySets"; $currentEm = em; panToEm(em) }} />
             {/each}
         {/each}
         <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
@@ -119,9 +103,20 @@
                         cx={toMap(-area.center.z)}
                         cy={toMap(area.center.x)}
                         r={area.radius * 2}
-                        style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
+                        style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
                     />
                     {/if}
+                    <text
+                        x={toMap(-area.center.z)}
+                        y={toMap(area.center.x)}
+                        fill="hsl({areaGroup.index * 10}, 50%, 10%)"
+                        font-size="10"
+                        width="{area.type === 1 ? (area.points[0].z - area.points[1].z) * 2 : area.radius * 4}px"
+                        text-anchor="middle"
+                        alignment-baseline="middle"
+                    >
+                        {areaGroup.name}
+                    </text>
                 {/each}
             {/each}
         </svg>
@@ -146,42 +141,11 @@
     .map img {
         height: 4400px;
         width: 4400px;
+        background-color: #111;
     }
     .map svg.areas {
         position: absolute;
         top: 0;
         left: 0;
-    }
-    .em {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        border-radius: 100%;
-        z-index: 1;
-    }
-    .em.nearby {
-        outline: 1px solid var(--primary-400);
-    }
-    .em.active {
-        outline: 1px solid red;
-        z-index: 3;
-    }
-    .em.secondary:before {
-        content: "L";
-        font-size: 6px;
-        position: absolute;
-        top: -2px;
-        left: 0.5px;
-        font-weight: bold;
-        color: #333;
-    }
-    .wall {
-        background-color: red;
-        height: 2px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translateX(-50%) translateY(-50%);
-        z-index: -1;
     }
 </style>

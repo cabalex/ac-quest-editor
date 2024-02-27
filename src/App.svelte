@@ -26,18 +26,20 @@
 <main style="width: 100%; position: relative">
     <GettingStarted hidden={$session !== null} />
     {#if $session !== null}
-        <SideBar />
-        {#if $currentTab == "enemySets" && $currentEm !== null}
-            {#key $currentEm.Id}
-                <EmPopup bind:tab={emTab} em={$currentEm} on:close={() => $currentEm = null} />            
-            {/key}
-        {/if}
-        {#if ($currentTab == "tasks" || $currentTab == "flags" || $currentTab == "talkScripts") && $currentTask !== null}
-            <Tasks />
-        {/if}
-        {#if $currentTab == "talkScripts" && $currentTalkScript}
-            <TalkScriptEditor script={$currentTalkScript} />
-        {/if}
+        {#key $session.id}
+            <SideBar />
+            {#if $currentTab == "enemySets" && $currentEm !== null}
+                {#key $currentEm.Id}
+                    <EmPopup bind:tab={emTab} em={$currentEm} on:close={() => $currentEm = null} />            
+                {/key}
+            {/if}
+            {#if ($currentTab == "tasks" || $currentTab == "flags" || $currentTab == "talkScripts") && $currentTask !== null}
+                <Tasks />
+            {/if}
+            {#if $currentTab == "talkScripts" && $currentTalkScript}
+                <TalkScriptEditor script={$currentTalkScript} />
+            {/if}
+        {/key}
         <Map />
     {/if}
 </main>

@@ -48,13 +48,13 @@
         />
         <BoolInput
             label="Debug display"
-            description="Does nothing."
+            description="Used in development. Does nothing now."
             bind:value={area.debugDisplay}
         />
         {#each area.groups as group, j}
             <AreaComponent area={group} i={j} on:delete={() => area.groups = area.groups.filter(x => x != group)} />
         {/each}
-        <button style="width: calc(100% - 10px); margin-top: 5px; padding: 10px;" on:click={addArea.bind(null, i)}>
+        <button class="addBtn" style="width: calc(100% - 10px); margin-top: 5px; padding: 10px;" on:click={addArea.bind(null, i)}>
             <IconPlus />
             Add Area
         </button>

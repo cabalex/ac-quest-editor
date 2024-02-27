@@ -75,12 +75,23 @@ button.transparentBtn:hover:not(:disabled) {
 }
 button.addBtn {
   width: 100%;
-  margin-top: 50px;
+  margin-top: 10px;
+  margin-bottom: 20px;
   padding: 20px;
   background-color: var(--primary-700);
 }
 button.addBtn:hover {
   background-color: var(--primary-600);
+}
+button.deleteBtn {
+  width: 100%;
+  padding: 10px;
+  color: var(--danger);
+  transition: 0.2s;
+}
+button.deleteBtn:hover {
+  background-color: var(--danger);
+  color: white;
 }
 button:disabled {
   cursor: not-allowed;

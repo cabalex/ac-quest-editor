@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { IconCaretRightFilled, IconTrash, IconUsers, IconUser, IconChevronRight, IconCode } from "@tabler/icons-svelte";
-    import type { Em, EmSet } from "../../../_lib/types/EnemySet";
+    import { IconCaretRightFilled, IconTrash, IconUsers, IconUser, IconChevronRight, IconCode, IconPlus } from "@tabler/icons-svelte";
+    import { Em, type EmSet } from "../../../_lib/types/EnemySet";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import TextInput from "../../../assets/TextInput.svelte";
     import NumberInput from "../../../assets/NumberInput.svelte";
@@ -28,15 +28,22 @@
 
     const scroll = () => {
         if (elem && shouldScroll) {
-            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+            elem.scrollIntoView({ block: "center", behavior: "smooth" });
+            // when translating, scrollToView doesn't bring the screen to the right offset.
+            // force it to scroll again after a delay.
+            setTimeout(() => elem?.scrollIntoView({ block: "center" }), 1000);
         }
     }
 
     function focusEm(em: Em) {
+        if ($currentEm === em) {
+            $currentEm = null;
+            return;
+        }
         // only scroll the list if the em is being selected from the map.
         shouldScroll = false;
         $currentEm = em;
-        setTimeout(() => shouldScroll = true, 0);
+        setTimeout(() => shouldScroll = true, 100);
     }
 
     function referencedTasks() {
@@ -62,8 +69,7 @@
     }
     let references = referencedTasks();
 
-    // @ts-ignore
-    $: if (set.ems.includes($currentEm)) setTimeout(() => scroll(), 0);
+    $: if ($currentEm && set.ems.includes($currentEm)) setTimeout(() => scroll(), 0);
 </script>
 
 <div class="emSets" bind:this={elem}>
@@ -87,6 +93,10 @@
                 <IconChevronRight />
             </button>
         {/each}
+        <button class="addBtn addEm" on:click={() => { set.ems = [...set.ems, new Em(set.ems.length, [0x20000, 0x20000])]; focusEm(set.ems[set.ems.length - 1])}}>
+            <IconPlus />
+            Add Enemy
+        </button>
     </div>
     <div class="referencedTasks">
         {#each references as reference}
@@ -165,21 +175,12 @@
     button.expand.active {
         transform: rotate(90deg);
     }
-    button.deleteBtn {
-        width: 100%;
-        padding: 10px;
-        border-radius: 0 0 10px 10px;
-        color: var(--danger);
-        transition: 0.2s;
-    }
-    button.deleteBtn:hover {
-        background-color: var(--danger);
-        color: white;
-    }
-    .em {
+    .em, .addEm {
         width: calc(100% - 20px);
         padding: 5px;
         margin: 5px 10px;
+    }
+    .em {
         background-color: #333;
         background: linear-gradient(90deg, #333 50%, #555 100%, #555) #333;
         background-repeat: no-repeat;
@@ -204,6 +205,9 @@
         text-align: left;
     }
     button.em.active {
-        background-color: #555;
+        background-color: #888;
+    }
+    button.deleteBtn {
+        border-radius: 0 0 10px 10px;
     }
 </style>

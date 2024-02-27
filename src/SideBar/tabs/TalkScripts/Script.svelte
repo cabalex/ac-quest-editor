@@ -97,8 +97,32 @@
         }
         return options;
     }
-
     let emDropdown = emDropdownOptions();
+
+
+    let shouldScroll = true;
+    let elem: HTMLDivElement;
+    const scroll = () => {
+        if (elem && shouldScroll) {
+            elem.scrollIntoView({ block: "center", behavior: "smooth" });
+            // when translating, scrollToView doesn't bring the screen to the right offset.
+            // force it to scroll again after a delay.
+            setTimeout(() => elem?.scrollIntoView({ block: "center" }), 1000);
+        }
+    }
+
+    function focusTalkScript() {
+        if ($currentTalkScript === script) {
+            $currentTalkScript = null;
+            return;
+        }
+        // only scroll the list if the em is being selected from the map.
+        shouldScroll = false;
+        $currentTalkScript = script;
+        setTimeout(() => shouldScroll = true, 100);
+    }
+
+    $: if ($currentTalkScript === script) setTimeout(() => scroll(), 0);
 </script>
 
 <div
@@ -107,7 +131,8 @@
     class:active={$currentTalkScript == script}
     role="button"
     tabindex="0"
-    on:click={() => $currentTalkScript = $currentTalkScript === script ? null : script}
+    bind:this={elem}
+    on:click={focusTalkScript}
     transition:slide={{duration: 100, easing: cubicInOut}}
 >
     <header>
@@ -227,15 +252,7 @@
         transform: rotate(90deg);
     }
     button.deleteBtn {
-        width: 100%;
-        padding: 10px;
         border-radius: 0 0 10px 10px;
-        color: var(--danger);
-        transition: 0.2s;
-    }
-    button.deleteBtn:hover {
-        background-color: var(--danger);
-        color: white;
     }
     .referencedTasks {
         display: flex;

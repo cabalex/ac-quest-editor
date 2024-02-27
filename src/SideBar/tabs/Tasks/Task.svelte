@@ -23,6 +23,28 @@
         }
     }
 
+    let shouldScroll = true;
+    let elem: HTMLDivElement;
+    const scroll = () => {
+        if (elem && shouldScroll) {
+            elem.scrollIntoView({ block: "center", behavior: "smooth" });
+            // when translating, scrollToView doesn't bring the screen to the right offset.
+            // force it to scroll again after a delay.
+            setTimeout(() => elem?.scrollIntoView({ block: "center" }), 1000);
+        }
+    }
+
+    function focusTask() {
+        if ($currentTask === i) {
+            $currentTask = null;
+            return;
+        }
+        // only scroll the list if the em is being selected from the map.
+        shouldScroll = false;
+        $currentTask = i;
+        setTimeout(() => shouldScroll = true, 100);
+    }
+
     const colors = [
         "white",
         "#EF5350", // red
@@ -32,6 +54,8 @@
         "#42A5F5", // blue
         "#AB47BC", // purple
     ]
+
+    $: if ($currentTask === i) setTimeout(() => scroll(), 0);
 </script>
 
 <div
@@ -39,8 +63,9 @@
     class:open={expanded}
     class:active={$currentTask == i}
     role="button"
+    bind:this={elem}
     tabindex="0"
-    on:click={() => $currentTask = $currentTask === i ? null : i}
+    on:click={focusTask}
     transition:slide={{duration: 100, easing: cubicInOut}}
 >
     <header>
@@ -142,15 +167,7 @@
         transform: rotate(90deg);
     }
     button.deleteBtn {
-        width: 100%;
-        padding: 10px;
         border-radius: 0 0 10px 10px;
-        color: var(--danger);
-        transition: 0.2s;
-    }
-    button.deleteBtn:hover {
-        background-color: var(--danger);
-        color: white;
     }
     .taskColor {
         display: flex;

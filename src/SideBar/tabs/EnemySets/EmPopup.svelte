@@ -1,20 +1,45 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import { questLookup } from "../../../_lib/lookupTable";
-    import type { Em } from "../../../_lib/types/EnemySet";
+    import { Em } from "../../../_lib/types/EnemySet";
     import { fly } from "svelte/transition";
     import { cubicIn } from "svelte/easing";
-    import { IconArrowRight, IconHash, IconInfoCircle, IconMessage, IconMessage2, IconQuestionMark, IconSettingsCode, IconX } from "@tabler/icons-svelte"
+    import { IconCopy, IconHash, IconInfoCircle, IconMessage, IconMessage2, IconQuestionMark, IconSettingsCode, IconTrash, IconX } from "@tabler/icons-svelte"
     import VectorInput from "../../../assets/VectorInput.svelte";
     import NumberInput from "../../../assets/NumberInput.svelte";
-    import { currentTalkScript, currentTab, session } from "../../../store";
-  import BoolInput from "../../../assets/BoolInput.svelte";
+    import { currentTalkScript, currentTab, currentEm, session } from "../../../store";
+    import BoolInput from "../../../assets/BoolInput.svelte";
+    import RotationInput from "../../../assets/RotationInput.svelte";
 
     const dispatch = createEventDispatcher();
 
     export let em: Em;
 
     export let tab = "about";
+
+    function deleteEm() {
+        if (!$session) return;
+
+        let set = $session.enemySet.sets.find(x => x.ems.includes(em));
+        if (!set) return;
+
+        set.ems = set.ems.filter(x => x != em);
+
+        dispatch("close");
+    }
+
+    function duplicateEm() {
+        if (!$session) return;
+
+        let set = $session.enemySet.sets.find(x => x.ems.includes(em));
+        if (!set) return;
+
+        let copy = Em.fromNode(em.repack());
+        copy.SetNo = set.ems.length;
+        set.ems = [...set.ems, copy];
+
+        $currentEm = copy;
+    }
 
     $: referencedTalkScripts = $session?.talkScript ?
         $session.talkScript.scripts.filter(x =>
@@ -51,6 +76,16 @@
     </div>
     <div class="content">
         {#if tab === "about"}
+            <div class="quickActions">
+                <button on:click={duplicateEm}>
+                    <IconCopy />
+                    Duplicate
+                </button>
+                <button class="deleteBtn" on:click={deleteEm}>
+                    <IconTrash />
+                    Delete
+                </button>
+            </div>
             {#if referencedTalkScripts.length}
                 <h2 class="sectionHeader">TalkScripts initiated by this object</h2>
                 <div class="talkScriptList">
@@ -81,9 +116,8 @@
                 label="Position"
                 bind:value={em.Trans}
             />
-            <NumberInput
+            <RotationInput
                 label="Rotation"
-                description={`In radians. ${(em.Rotation * 180 / Math.PI).toFixed()}°`}
                 bind:value={em.Rotation}
             />
             <VectorInput
@@ -302,5 +336,15 @@
         gap: 5px;
         width: calc(100% - 20px);
         margin: 10px;
+    }
+    .quickActions {
+        display: flex;
+        gap: 10px;
+        width: calc(100% - 20px);
+        padding: 10px;
+    }
+    .quickActions button {
+        flex-grow: 1;
+        width: 100%;
     }
 </style>

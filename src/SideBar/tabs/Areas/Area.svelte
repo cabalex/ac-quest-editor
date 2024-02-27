@@ -88,7 +88,7 @@
             {/if}
             <BoolInput
                 label="Debug display"
-                description="Does nothing."
+                description="Used in development. Does nothing now."
                 bind:value={area.debugDisplay}
             />
         </div>
@@ -129,14 +129,6 @@
         transform: rotate(90deg);
     }
     button.deleteBtn {
-        width: 100%;
-        padding: 10px;
         border-radius: 0 0 10px 10px;
-        color: var(--danger);
-        transition: 0.2s;
-    }
-    button.deleteBtn:hover {
-        background-color: var(--danger);
-        color: white;
     }
 </style>
