@@ -9,7 +9,7 @@
 
     let mapElem: HTMLDivElement;
 
-    $: map = questAreaLookup($session?.id || "0") || "r300";
+    $: map = questAreaLookup($session?.id || "0") || "r0";
     let panzoom: PanzoomObject;
 
     let zeroVector = new Vector();
@@ -23,6 +23,7 @@
         setTimeout(() => {
             panzoom.reset();
             panzoom.zoom(2);
+            panzoom.pan(-1350, -1000);
         }, 0);
     })
 

@@ -283,16 +283,16 @@ export const ifBlocks = [
     ),
 
     ifDefine("if-14", "If Player has %1 %2x of item %3", [
-        ifCommand("IFHasItemCondition"),
+        ifCommand("HasItemCondition"),
         {
             "type": "field_number",
-            "name": "IFHasItemValue",
+            "name": "HasItemValue",
             "value": 0,
             "min": 0
         },
         {
             "type": "field_input",
-            "name": "IFHasItemId",
+            "name": "HasItemId",
             "text": "000000"
         },
         ]

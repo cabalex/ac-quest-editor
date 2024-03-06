@@ -59,6 +59,7 @@
         align-self: stretch;
         border-radius: 5px;
         width: 40px;
+        margin-right: 5px;
     }
     :global(.command .input) {
         flex-direction: column;
@@ -76,10 +77,9 @@
     :global(.command *:last-child input) {
         width: 25ch;
     }
-    :global(.command input[type="number"]) {
-        width: 50px;
-    }
-    .sectionHeader {
-        margin-top: 5px;
+    :global(.command > *:nth-child(2)) {
+        width: 60px;
+        flex-grow: 0;
+        flex-shrink: 0;
     }
 </style>
