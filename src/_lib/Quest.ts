@@ -4,6 +4,7 @@ import extractBXM from "./files/BXM/extract";
 import repackBXM from "./files/BXM/repack";
 import extractCSV from "./files/CSV/extract";
 import repackCSV from "./files/CSV/repack";
+import { type FileData as PTDFileData } from "./files/PTD/extract";
 
 import BezierData from "./types/BezierData";
 import EnemySet, { Em } from "./types/EnemySet";
@@ -48,7 +49,7 @@ export default class Quest {
     }
 
 
-    static fromDAT(name: string, dat: FileData) {
+    static fromDAT(name: string, dat: FileData, gameText?: PTDFileData) {
         if (!name.startsWith("quest")) {
             throw new Error("Invalid quest name");
         }
@@ -114,7 +115,7 @@ export default class Quest {
         }
 
         if (talkScriptBXMs.length) {
-            quest.talkScript = TalkScript.fromNodes(talkScriptBXMs);
+            quest.talkScript = TalkScript.fromNodes(talkScriptBXMs, gameText);
         }
 
         console.log(quest);
@@ -122,12 +123,12 @@ export default class Quest {
         return quest;
     }
 
-    async repack() : Promise<ArrayBuffer> {
+    async repack(gameText?: PTDFileData) : Promise<ArrayBuffer> {
         let id = this.id.toLowerCase();
 
         let talkScriptFiles = [];
         if (this.talkScript) {
-            talkScriptFiles.push(...this.talkScript.repack());
+            talkScriptFiles.push(...this.talkScript.repack(gameText));
         }
 
         let files = [

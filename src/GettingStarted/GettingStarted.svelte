@@ -1,9 +1,13 @@
 <script lang="ts">
+    import { unzipSync } from "fflate";
     import { IconFileImport, IconFilePlus } from "@tabler/icons-svelte";
     import PlatinumFileReader from "../_lib/files/PlatinumFileReader";
     import extract from "../_lib/files/DAT/extract";
+    import extractPKZ from "../_lib/files/PKZ/extract";
+    import extract_partial from "../_lib/files/PKZ/extract_partial";
+    import extractPTD from "../_lib/files/PTD/extract";
     import Quest from "../_lib/Quest";
-    import { session, sessions } from "../store";
+    import { session, sessions, textCache } from "../store";
     import QuestList from "./QuestList.svelte";
     import QuestData from "../_lib/types/QuestData";
     import EnemySet from "../_lib/types/EnemySet";
@@ -12,15 +16,40 @@
     let inputElem: HTMLInputElement;
     export let hidden: boolean = false;
 
-    function uploadFile(e: any) {
-        loadQuest({name: e.target.files[0].name, arrayBuffer: e.target.files[0]});
+    async function uploadFile(e: any) {
+        if (e.target.files[0].name.endsWith(".dat")) {
+            loadQuest({name: e.target.files[0].name, arrayBuffer: e.target.files[0]});
+        } else {
+            // zip file with Text in it
+            const unzipped = unzipSync(new Uint8Array(await new PlatinumFileReader(e.target.files[0]).read()));
+
+            console.log(unzipped);
+
+            const textPKZ = Object.keys(unzipped).find(f => f.endsWith("Text/Text.pkz"));
+            if (textPKZ) {
+                const extracted = await extractPKZ(new PlatinumFileReader(unzipped[textPKZ].buffer));
+                const text = extracted.files.find(f => f.name === "TalkSubtitleMessage_USen.bin");
+
+                if (text) {
+                    const textArrayBuffer = (await extract_partial(text, extracted)).data;
+                    $textCache = await extractPTD(new PlatinumFileReader(textArrayBuffer));
+                    console.log("Extracted text file from ZIP", $textCache);
+                }
+            }
+            
+            for (let [name, value] of Object.entries(unzipped)) {
+                if (name.endsWith(".dat")) {
+                    loadQuest({name: name.split("/").pop(), arrayBuffer: value.buffer});
+                }
+            }
+        }
     }
 
     async function loadQuest(file: any) {
         let reader = new PlatinumFileReader(file.arrayBuffer);
         let result = await extract(reader);
         try {
-            $sessions = [...$sessions, Quest.fromDAT(file.name, result)]
+            $sessions = [...$sessions, Quest.fromDAT(file.name, result, $textCache || undefined)]
             $session = $sessions[$sessions.length - 1];
         } catch (e: any) {
             alert(`FAILED loading ${file.name}:\n${e.message}\n\nCheck console for more details.`);
@@ -48,7 +77,7 @@
 <input
     bind:this={inputElem}
     on:change={uploadFile}
-    accept=".dat"
+    accept=".dat,.zip"
     type="file"
     style="display: none"
 />

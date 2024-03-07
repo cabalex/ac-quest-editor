@@ -1,3 +1,4 @@
+import type { FileData as PTDFileData } from "../files/PTD/extract";
 import type { FileData, Node } from "../files/BXM/extract";
 
 export default class TalkScript {
@@ -11,12 +12,12 @@ export default class TalkScript {
     // Since TalkScript_XXXX.bxm and TalkScript_speech.bxm are the same format, just
     // the "speech" version only has trigger type 2 (above the NPCs' heads), we can
     // consolidate them to be intuitive.
-    static fromNodes(bxms: FileData[]) {
+    static fromNodes(bxms: FileData[], gameText?: PTDFileData) {
         // BXM file
         let scripts = [];
         for (let bxm of bxms) {
             if (bxm.data.children.length > 0 && bxm.data.children[0].name === "Info") {
-                scripts.push(...bxm.data.children.map(x => Script.fromNode(x)));
+                scripts.push(...bxm.data.children.map(x => Script.fromNode(x, gameText)));
             } else if (bxm.data.children.length > 0 && bxm.data.children[0].name === "StateInfo") {
                 // When there is only one Info script, it just becomes the whole XML file???
                 // WTF platinum??? THIS IS ONLY IN Q3430 FILE 04 OFFICER RESCUE????
@@ -26,7 +27,7 @@ export default class TalkScript {
                     0,
                     "qffff",
                     0,
-                    bxm.data.children.map(x => StateInfo.fromNode(x))
+                    bxm.data.children.map(x => StateInfo.fromNode(x, gameText))
                 ));
             }
         }
@@ -34,19 +35,19 @@ export default class TalkScript {
     }
 
     // Returns two files, the first being TalkScript and the second being TalkScript_speech.
-    repack(): [{data: Node, encoding: "UTF-8"}, {data: Node, encoding: "UTF-8"}|undefined] {
+    repack(gameText?: PTDFileData): [{data: Node, encoding: "UTF-8"}, {data: Node, encoding: "UTF-8"}|undefined] {
         // Sort scripts out into two separate files.
         const node = {
             name: "Root",
             attributes: {},
             value: "",
-            children: this.scripts.filter(x => x.triggerType !== 2).map(x => x.repack())
+            children: this.scripts.filter(x => x.triggerType !== 2).map(x => x.repack(gameText))
         }
         const speechNode = {
             name: "Root",
             attributes: {},
             value: "",
-            children: this.scripts.filter(x => x.triggerType === 2).map(x => x.repack())
+            children: this.scripts.filter(x => x.triggerType === 2).map(x => x.repack(gameText))
         }
         return [
             {data: node, encoding: "UTF-8"},
@@ -73,7 +74,7 @@ export class Script {
         this.stateInfos = stateInfos || [];
     }
 
-    static fromNode(node: Node) {
+    static fromNode(node: Node, gameText?: PTDFileData) {
         let objId = node.children[0].value;
         let setType = parseInt(node.children[1].value);
         let questId = node.children[2].value;
@@ -81,12 +82,12 @@ export class Script {
         
         let stateInfos = [];
         for (let i = 4; i < node.children.length; i++) {
-            stateInfos.push(StateInfo.fromNode(node.children[i]));
+            stateInfos.push(StateInfo.fromNode(node.children[i], gameText));
         }
         return new Script(objId, setType, questId, triggerType, stateInfos);
     }
 
-    repack() {
+    repack(gameText?: PTDFileData) {
         const node: Node = {
             name: "Info",
             attributes: {},
@@ -96,7 +97,7 @@ export class Script {
                 { name: "SetType", attributes: {}, children: [], value: this.setType.toString() },
                 { name: "QuestId", attributes: {}, children: [], value: this.questId },
                 { name: "TriggerType", attributes: {}, children: [], value: this.triggerType.toString() },
-                ...(this.stateInfos.map(x => x.repack()))
+                ...(this.stateInfos.map(x => x.repack(gameText)))
             ]
         }
 
@@ -117,14 +118,14 @@ export class StateInfo {
         this.commands = commands;
     }
 
-    static fromNode(node: Node) {
+    static fromNode(node: Node, gameText?: PTDFileData) {
         let triggers = node.children[0].children.map(x => x.value);
         let no = parseInt(node.children[1].value.slice(1));
         let priority = parseInt(node.children[2].value || "0");
         let commands = [];
         let lastCommandType = 0;
         for (let i = 3; i < node.children.length; i++) {
-            let command = StateCommand.fromNode(node.children[i]);
+            let command = StateCommand.fromNode(node.children[i], gameText);
             
             // command type -1 is used as a short hand for "repeat last command".
             // this expands them out so it can be properly edited.
@@ -139,7 +140,7 @@ export class StateInfo {
         return new StateInfo(triggers, no, priority, commands);
     }
 
-    repack() {
+    repack(gameText?: PTDFileData) {
         const triggers = {
             name: "Trigger",
             attributes: {},
@@ -154,7 +155,7 @@ export class StateInfo {
             })
         }
 
-        const commands = this.commands.map(x => x.repack());
+        const commands = this.commands.map(x => x.repack(gameText));
 
         // puts it back into short-hand -1s.
         let lastCommandType = "-1";
@@ -185,26 +186,76 @@ export class StateInfo {
 export class StateCommand {
     type: number;
     args: [string, string, string];
+    messageID: string;
+    
+    // additional parameters for smart Text repacking
     message: string;
+    personId: string;
 
-    constructor(command: number, args?: [string, string, string], message?: string) {
+    constructor(command: number, args?: [string, string, string], messageID?: string, message?: string) {
         this.type = command;
         this.args = args || ["", "", ""];
+        this.messageID = messageID || "";
+        this.personId = messageID?.split("_").pop() || "SYN";
         this.message = message || "";
     }
 
-    static fromNode(node: Node) {
+    static fromNode(node: Node, gameText?: PTDFileData) {
         let command = parseInt(node.children[0].value);
         let args: [string, string, string] = [
             node.children[1].value,
             node.children[2].value,
             node.children[3].value
         ];
-        let message = node.children[4].value;
-        return new StateCommand(command, args, message);
+        let messageID = node.children[4].value;
+
+        if (gameText) {
+            for (let section of Object.values(gameText.strings)) {
+                const message = section.get(messageID);
+                if (message) {
+                    return new StateCommand(command, args, messageID, message[0]);
+                }
+            }
+        }
+        return new StateCommand(command, args, messageID, messageID);
     }
 
-    repack() {
+    repack(gameText?: PTDFileData) {
+        // attempt to find the message ID in the game text file.
+        if (gameText) {
+            let found = false;
+            for (let section of Object.values(gameText.strings)) {
+                section.forEach((value, key) => {
+                    if (value.includes(this.message)) {
+                        this.messageID = key;
+                        found = true;
+                        return false;
+                    }
+                })
+                if (found) break;
+            }
+            if (!found) {
+
+                // NP (normal), EV (cutscene text), RD (radio), and SB (speech balloon)
+                let id = 10;
+                let newKey = `NP_p0000_XXXX_${id.toString().padStart(5, "0")}_${this.personId}`
+                while (gameText.strings["Mes_phase_common"].has(newKey)) {
+                    id += 10;
+                    newKey = `NP_p0000_XXXX_${id.toString().padStart(5, "0")}_${this.personId}`
+                }
+
+                // add to the text file
+                console.log("Assigned message", this.message, " ID: ", newKey);
+                this.messageID = newKey;
+                gameText.strings["Mes_phase_common"].set(newKey, [this.message, ""]);
+                // female gender variant
+                id += 10000;
+                newKey = `NP_p0000_XXXX_${id}_${this.personId}`
+                gameText.strings["Mes_phase_common"].set(newKey, [this.message, ""]);
+            }
+        }
+
+
         const node = {
             name: "CommandInfo",
             attributes: {},
@@ -214,7 +265,7 @@ export class StateCommand {
                 { name: "Param1", attributes: {}, value: this.args[0], children: [] },
                 { name: "Param2", attributes: {}, value: this.args[1], children: [] },
                 { name: "Param3", attributes: {}, value: this.args[2], children: [] },
-                { name: "Message", attributes: {}, value: this.message, children: [] }
+                { name: "Message", attributes: {}, value: this.messageID, children: [] }
             ]
         }
         

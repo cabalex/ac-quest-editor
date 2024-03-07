@@ -1,12 +1,14 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import VirtualList from "@sveltejs/svelte-virtual-list";
-    import extract, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
+    import extractPKZ, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
+    import repackPTD from "../_lib/files/PTD/repack";
+    import extractPTD from "../_lib/files/PTD/extract";
     import extract_partial from "../_lib/files/PKZ/extract_partial";
     import PlatinumFileReader from "../_lib/files/PlatinumFileReader";
     import { IconExclamationCircle, IconFile, IconSearch, IconX } from "@tabler/icons-svelte";
     import Loading from "../assets/Loading.svelte";
-    import { questsCache } from "../store";
+    import { questsCache, textCache } from "../store";
     import { lookup } from "../_lib/lookupTable";
 
     export let onClick: (quest: {name: string, arrayBuffer: ArrayBuffer}) => void;
@@ -19,10 +21,31 @@
             let response = await fetch('./quest.pkz');
             if (!response.ok) throw new Error('Network response was not ok.');
             let reader = new PlatinumFileReader(await response.arrayBuffer());
-            fileData = await extract(reader);
+            fileData = await extractPKZ(reader);
             $questsCache = fileData;
         } else {
             fileData = $questsCache;
+        }
+    }
+
+    async function fetchText() {
+        if (!$textCache) {
+            let response = await fetch('./TalkSubtitleMessage_USen.json');
+            if (!response.ok) throw new Error('Network response was not ok.');
+            let json = await response.json();
+            // convert objects to maps
+            for (let [key, value] of Object.entries(json)) {
+                json[key] = new Map(Object.entries(value as {[key: string]: string[]}));
+            }
+            $textCache = {strings: json};
+            
+            /*
+            // Legacy load directly from PTD - very slow!
+            let response = await fetch('./TalkSubtitleMessage_USen.bin');
+            if (!response.ok) throw new Error('Network response was not ok.');
+            let reader = new PlatinumFileReader(await response.arrayBuffer());
+            $textCache = await extractPTD(reader);
+            */
         }
     }
 
@@ -46,6 +69,7 @@
 
     onMount(() => {
         fetchQuests();
+        fetchText();
     })
 
     async function clickFile(partialFile: PartialFile) {

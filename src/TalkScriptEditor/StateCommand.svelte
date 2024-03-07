@@ -4,6 +4,7 @@
     import TextInput from "../assets/TextInput.svelte";
     import NumberInput from "../assets/NumberInput.svelte";
   import { IconTrash } from "@tabler/icons-svelte";
+  import LongTextInput from "../assets/LongTextInput.svelte";
 
     export let command: StateCommand;
     export let script: Script;
@@ -37,7 +38,7 @@
         label="Arg 3"
         bind:value={command.args[2]}
     />
-    <TextInput
+    <LongTextInput
         label="Message"
         bind:value={command.message}
     />
@@ -71,10 +72,10 @@
         flex-wrap: wrap;
         margin: 0;
     }
-    :global(.command input) {
+    :global(.command input, .command textarea) {
         width: calc(100% - 10px);
     }
-    :global(.command *:last-child input) {
+    :global(.command *:last-child input, .command *:last-child textarea) {
         width: 25ch;
     }
     :global(.command > *:nth-child(2)) {

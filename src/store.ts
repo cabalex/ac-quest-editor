@@ -9,6 +9,7 @@ export const session: Writable<Quest|null> = writable(null);
 export const currentTab: Writable<null|string> = writable(null);
 
 export const questsCache: Writable<any> = writable(null);
+export const textCache: Writable<any> = writable(null);
 
 export const currentEm: Writable<null|Em> = writable(null);
 export const currentTask: Writable<null|number> = writable(null);

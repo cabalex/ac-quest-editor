@@ -1,4 +1,4 @@
-import type PlatinumFileReader from "../lib/PlatinumFileReader";
+import type PlatinumFileReader from "../PlatinumFileReader";
 
 export interface PartialFile {
     name: string,

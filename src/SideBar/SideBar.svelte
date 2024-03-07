@@ -2,40 +2,15 @@
     import { fly } from "svelte/transition";
     import { currentTab, session, sessions } from "../store";
     import { cubicInOut } from "svelte/easing";
-    import { IconCode, IconDownload, IconFlag, IconInfoCircle, IconLoader2, IconMap2, IconMessage, IconMessageX, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
+    import { IconCode, IconFlag, IconInfoCircle, IconMap2, IconMessage, IconMessageX, IconTrash, IconUsersGroup } from "@tabler/icons-svelte";
     import { lookup } from "../_lib/lookupTable";
     import About from "./tabs/About.svelte";
     import EnemySets from "./tabs/EnemySets/EnemySets.svelte";
     import Areas from "./tabs/Areas/Areas.svelte";
     import Tasks from "./tabs/Tasks/Tasks.svelte";
     import TalkScripts from "./tabs/TalkScripts/TalkScripts.svelte";
-    import RepackModal from "./RepackModal.svelte";
     import Flags from "./tabs/Flags.svelte";
-
-    let repacking = false;
-    let repackModalOpen = false;
-    async function repack() {
-        repacking = true;
-        
-        // must wrap in setTimeout to ensure the DOM updates beforehand
-        setTimeout(async () => {
-            let arrayBuffer = await $session?.repack().catch(console.error);
-            if (arrayBuffer) {
-                let blob = new Blob([arrayBuffer], { type: "application/octet-stream" });
-                let url = URL.createObjectURL(blob);
-                let a = document.createElement("a");
-                a.href = url;
-                a.download = `quest${$session?.id}.dat`;
-                a.click();
-                URL.revokeObjectURL(url);
-                if (!localStorage.getItem("acqe-hideRepackModal")) repackModalOpen = true;
-            } else {
-                alert("An error occurred during repack! Check the console for more details.");
-            }
-
-            repacking = false;
-        }, 0)
-    }
+    import ExportDropdown from "./ExportDropdown.svelte";
 
     function deleteSession() {
         if (confirm("Are you sure you want to delete this session? It will be lost forever! (Repack if you want to come back to this later.)")) {
@@ -98,17 +73,7 @@
     </button>
     <div style="flex-grow: 1; height: 100%" />
     <hr />
-    {#if repacking}
-        <button class:active={true}>
-            <IconLoader2 class="loadingIcon" />
-            Repacking...
-        </button>
-    {:else}
-        <button on:click={repack}>
-            <IconDownload />
-            Repack
-        </button>
-    {/if}
+    <ExportDropdown />
     <button on:click={deleteSession} style="color: var(--danger)">
         <IconTrash />
         Delete
@@ -128,10 +93,6 @@
     {:else if $currentTab == "talkScripts"}
         <TalkScripts session={$session} />
     {/if}
-{/if}
-
-{#if repackModalOpen}
-    <RepackModal on:close={() => repackModalOpen = false} />
 {/if}
 
 <style>
