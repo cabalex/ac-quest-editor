@@ -35,9 +35,8 @@
     on:click={(e) => {dispatch("click", em); e.stopPropagation()}}
     style={`left: ${x}px; top: ${y}px; transform: rotate(${em.Rotation + Math.PI / 2}rad); background-color: hsl(${set.number * 10}, 50%, 60%)`}
 >
-{#if (questLookup(em.Id.toString(16), true) || "").startsWith("bga00") ||
-    (questLookup(em.Id.toString(16), true) || "").startsWith("bga03")}
-    <div class="wall" style={`width: ${em.SetType * 2}px`} />
+{#if (questLookup(em.Id.toString(16)) || "").startsWith("No")}
+    <div class="wall" style={`width: ${(em.SetType || em.ExSetTypeA || em.ExSetTypeB) * 2}px`} />
 {/if}
 </div>
 {#if em.secondaryObjectEnabled}

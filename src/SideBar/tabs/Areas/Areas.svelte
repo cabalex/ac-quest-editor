@@ -9,6 +9,7 @@
     import NumberInput from "../../../assets/NumberInput.svelte";
     import TextInput from "../../../assets/TextInput.svelte";
     import { AreaGroup, Area } from "../../../_lib/types/QuestData";
+    import { showAreasOnMap } from "../../../store";
     
     export let session: Quest;
 
@@ -35,6 +36,7 @@
             <span>Regions on the map that can detect players.</span>
         </div>
     </header>
+    <BoolInput label="Show areas on the map" bind:value={$showAreasOnMap} />
     {#each session.questData.areas as area, i}
         <hr />
         <h2 class="sectionHeader" translate="yes">{area.name}</h2>

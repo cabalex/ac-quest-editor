@@ -134,7 +134,7 @@ const questTable = {
     "q2690": "File 06 Hermit Training",
     "q26b0": "File 06 Hermit Aberration",
     "q26b5": "File 06 Rooftop Rescue",
-    "q26c5": "File 06 Dpuglas Chase Sequence",
+    "q26c5": "File 06 Douglas Chase Sequence",
     "q26d5": "File 06 Chimera Takedown",
     "q26e5": "File 06 Chimera Takedown",
     "q26f0": "File 06 Neuron in Need",

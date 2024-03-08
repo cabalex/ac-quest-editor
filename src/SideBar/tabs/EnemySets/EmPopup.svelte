@@ -156,6 +156,11 @@
                 bind:value={em.SetNo}
             />
             <NumberInput
+                label="SetType"
+                description="Do not touch if this entity has a TalkScript!"
+                bind:value={em.SetType}
+            />
+            <NumberInput
                 label="PathNo"
                 bind:value={em.PathNo}
             />
@@ -235,12 +240,12 @@
         {:else if tab === "extras"}
             <NumberInput
                 label="ExSetTypeA"
-                description={"0x" + em.ExSetTypeA.toString(16)}
+                description={"Width on bga050. 0x" + em.ExSetTypeA.toString(16)}
                 bind:value={em.ExSetTypeA}
             />
             <NumberInput
                 label="ExSetTypeB"
-                description={"0x" + em.ExSetTypeB.toString(16)}
+                description={"Height on bga050. 0x" + em.ExSetTypeB.toString(16)}
                 bind:value={em.ExSetTypeB}
             />
             <NumberInput

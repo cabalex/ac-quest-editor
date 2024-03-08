@@ -7,6 +7,7 @@ export const sessions: Writable<Quest[]> = writable([]);
 export const session: Writable<Quest|null> = writable(null);
 
 export const currentTab: Writable<null|string> = writable(null);
+export const showAreasOnMap: Writable<boolean> = writable(true);
 
 export const questsCache: Writable<any> = writable(null);
 export const textCache: Writable<any> = writable(null);

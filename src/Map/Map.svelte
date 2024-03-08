@@ -2,7 +2,7 @@
     import Panzoom, { type PanzoomObject } from '@panzoom/panzoom';
     import { onDestroy, onMount } from 'svelte';
     import { questAreaLookup, questLookup } from '../_lib/lookupTable';
-    import { currentTab, currentEm, session } from '../store';
+    import { currentTab, currentEm, session, showAreasOnMap } from '../store';
     import { Em } from '../_lib/types/EnemySet';
     import MapEm from './MapEm.svelte';
   import Vector from '../_lib/Vector';
@@ -91,36 +91,38 @@
                 <MapEm em={em} set={set} cachedEm={cachedEm} on:click={() => { $currentTab = "enemySets"; $currentEm = em; panToEm(em) }} />
             {/each}
         {/each}
-        <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
-            {#each ($session?.questData.areas || []) as areaGroup}
-                {#each areaGroup.groups as area}
-                    {#if area.type === 1}
-                    <polygon
-                        points={area.points.map(coord => `${toMap(-coord.z)},${toMap(coord.x)}`).join(" ")}
-                        style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
-                    />
-                    {:else}
-                    <circle
-                        cx={toMap(-area.center.z)}
-                        cy={toMap(area.center.x)}
-                        r={area.radius * 2}
-                        style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
-                    />
-                    {/if}
-                    <text
-                        x={toMap(-area.center.z)}
-                        y={toMap(area.center.x)}
-                        fill="hsl({areaGroup.index * 10}, 50%, 10%)"
-                        font-size="10"
-                        width="{area.type === 1 ? (area.points[0].z - area.points[1].z) * 2 : area.radius * 4}px"
-                        text-anchor="middle"
-                        alignment-baseline="middle"
-                    >
-                        {areaGroup.name}
-                    </text>
-                {/each}
-            {/each}
-        </svg>
+            <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
+                {#if $showAreasOnMap}
+                    {#each ($session?.questData.areas || []) as areaGroup}
+                        {#each areaGroup.groups as area}
+                            {#if area.type === 1}
+                            <polygon
+                                points={area.points.map(coord => `${toMap(-coord.z)},${toMap(coord.x)}`).join(" ")}
+                                style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
+                            />
+                            {:else}
+                            <circle
+                                cx={toMap(-area.center.z)}
+                                cy={toMap(area.center.x)}
+                                r={area.radius * 2}
+                                style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
+                            />
+                            {/if}
+                            <text
+                                x={toMap(-area.center.z)}
+                                y={toMap(area.center.x)}
+                                fill="hsl({areaGroup.index * 10}, 50%, 10%)"
+                                font-size="10"
+                                width="{area.type === 1 ? (area.points[0].z - area.points[1].z) * 2 : area.radius * 4}px"
+                                text-anchor="middle"
+                                alignment-baseline="middle"
+                            >
+                                {areaGroup.name}
+                            </text>
+                        {/each}
+                    {/each}
+                {/if}
+            </svg>
     </div>
 </div>
 
