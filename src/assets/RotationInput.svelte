@@ -40,12 +40,12 @@
         // snap to notches
         if ((rad + 0.1) % (Math.PI / 4) < 0.2) rad = Math.round(rad / (Math.PI / 4)) * (Math.PI / 4);
         
-        value = -rad;
+        value = rad - Math.PI;
     }
 
     $: degrees = (value * 180 / Math.PI).toFixed(2);
 
-    $: transform = `translate(${Math.sin(value + Math.PI / 2) * 60 - 12}px, ${-Math.cos(value + Math.PI / 2) * 60 - 12}px) rotate(${value + Math.PI / 2}rad)`;
+    $: transform = `translate(${Math.sin(-value - Math.PI / 2) * 60 - 12}px, ${-Math.cos(-value - Math.PI / 2) * 60 - 12}px) rotate(${-value - Math.PI / 2}rad)`;
 </script>
 
 <div class="input">

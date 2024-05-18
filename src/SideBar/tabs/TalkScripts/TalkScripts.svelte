@@ -95,6 +95,7 @@
         <li><b>Through a Task</b>: A Task can trigger a Talk Script to run via its hexadecimal ID.</li>
         <li><b>Through a Speech Bubble</b>: A speech bubble will appear over the target NPC's head, displaying conversation that doesn't need to interrupt gameplay.</li>
     </ul>
+    <p><b>NPC interaction and Speech Bubble TalkScripts can only be set on PL objects (e.g. PL2009, an NPC), not EMs.</b> You can't talk to chimeras :(</p>
 </Modal>
 {/if}
 

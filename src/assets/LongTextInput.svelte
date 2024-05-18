@@ -13,7 +13,10 @@
             <p>{description}</p>
         {/if}
     </div>
-    <textarea placeholder={placeholder} bind:value={value} />
+    <textarea
+        placeholder={placeholder}
+        bind:value={value}
+    />
 </div>
 
 <style>
@@ -40,6 +43,8 @@
         padding: 10px;
         border-radius: 5px;
         border: 1px solid #666;
+        height: 70px;
+        resize: none;
         align-self: center;
     }
     h4, p {

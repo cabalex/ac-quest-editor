@@ -77,7 +77,7 @@
                 
                 
                 // always a "connector" statement
-                if (!execArea?.querySelector(":scope > block")) {
+                if (!nextBlock) {
                     // If no elements inside, maintain EXEC 0
                     
                 } else if (nextBlock?.querySelector(":scope > next > *") || nextBlock?.getAttribute("type")?.toLowerCase().startsWith('if')) {
@@ -106,8 +106,21 @@
             }
 
             // recursive if another block after exec or normal block
-            let nextBlock = elem.querySelector(':scope > next')?.querySelector(":scope > block");
-            if (nextBlock) commands.push(...parseCommands(nextBlock))
+            let nextBlock = elem.querySelector(':scope > next > block');
+            if (nextBlock) {
+                if (typeIF !== 0 && typeEXEC === 1) {
+                    // If it's not a single exec (self closing), add 0,0 to close it
+                    typeEXEC = 1,
+                    commands.push(new Command(0, {}, 0, {}));
+                }
+                commands.push(...parseCommands(nextBlock));
+            }
+
+            if (typeIF !== 0 && typeEXEC === 0) {
+                // If there is no EXEC block, add a dummy one
+                typeEXEC = 1,
+                commands.unshift(new Command(0, {}, 0, {}));
+            }
             
             return [new Command(typeIF, IFArgs, typeEXEC, EXECArgs), ...commands]
         }
@@ -141,7 +154,7 @@
         for (let x = 0; x < taskList.lineLists.length; x++) {
             // TaskList
             xml += `<block type="task-start" inline="false" y="${x*200}"><field name="taskno">${x}</field>`
-            let nested = []
+            let nested: string[] = []
             if (!taskList.lineLists[x]) {
                 xml += "</block>";
                 break;
@@ -149,6 +162,14 @@
             for (let y = 0; y < taskList.lineLists[x].length; y++) {
                 // Individual Command
                 let command = taskList.lineLists[x][y];
+
+                if (command.typeIF === 0 && command.typeEXEC === 0) {
+                    // pop off the if statement, if possible
+                    while (nested.includes("statement")) {
+                            xml += `</${nested.pop()}>`
+                    }
+                    continue
+                }
                 
                 if (!xml.endsWith('<statement name="execarea">')) {
                     xml += "<next>"
@@ -189,7 +210,7 @@
                     }
                     nested.push('block')
                 } else if (command.typeEXEC > 1) {
-                    console.log(`Unknown EXEC: ${command.typeEXEC}`, command)
+                    console.warn(`Unknown EXEC: ${command.typeEXEC}`, command)
                     xml += `<block inline="false" type="unknown-exec"><field name="typeEXEC">${command.typeEXEC}</field>`
                     nested.push('block')
                 }

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import VirtualList from "@sveltejs/svelte-virtual-list";
+    import VirtualList from "svelte-virtual-list-ce";
     import extractPKZ, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
     import repackPTD from "../_lib/files/PTD/repack";
     import extractPTD from "../_lib/files/PTD/extract";
@@ -109,7 +109,7 @@
     </VirtualList>
     <button class="transparentBtn" style="color: var(--danger)" on:click={openAll}>
         <IconExclamationCircle />
-        Open all (dangerous)
+        Open all (may take a while)
     </button>
 {:else}
     <div class="loading">
