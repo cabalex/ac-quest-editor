@@ -178,7 +178,7 @@ export default class Quest {
                 isPreviousIDStillAttached = true;
             } else if (
                 s !== script &&
-                questLookup(em.Id.toString(16), true)?.toUpperCase() == s.objId.toUpperCase() &&
+                questLookup(em.Id, true)?.toUpperCase() == s.objId.toUpperCase() &&
                 s.setType == em.SetType
             ) {
                 isNewIDAlreadyAttached = true;
@@ -214,6 +214,6 @@ export default class Quest {
             script.setType = em.SetType = highestID + 1;
         }
 
-        script.objId = questLookup(em.Id.toString(16), true)?.toUpperCase() || "OBJID_NOT_FOUND";
+        script.objId = questLookup(em.Id, true)?.toUpperCase() || "OBJID_NOT_FOUND";
     }
 }

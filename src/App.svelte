@@ -7,6 +7,7 @@
     import Tasks from "./Tasks/Tasks.svelte";
     import EmPopup from "./SideBar/tabs/EnemySets/EmPopup.svelte";
     import TalkScriptEditor from "./TalkScriptEditor/TalkScriptEditor.svelte";
+    import Randomizer from "./Randomizer/Randomizer.svelte";
 
 
     $: {
@@ -20,26 +21,32 @@
 
     // remember last selected tab
     let emTab = "about";
+
+    let randomizer = location.search.includes('randomizer')
 </script>
 
-<IconBar />
-<main style="width: 100%; position: relative">
-    <GettingStarted hidden={$session !== null} />
-    {#if $session !== null}
-        {#key $session.id}
-            <SideBar />
-            {#if $currentTab == "enemySets" && $currentEm !== null}
-                {#key $currentEm.Id}
-                    <EmPopup bind:tab={emTab} em={$currentEm} on:close={() => $currentEm = null} />            
-                {/key}
-            {/if}
-            {#if ($currentTab == "tasks" || $currentTab == "flags" || $currentTab == "talkScripts") && $currentTask !== null}
-                <Tasks />
-            {/if}
-            {#if $currentTab == "talkScripts" && $currentTalkScript}
-                <TalkScriptEditor script={$currentTalkScript} />
-            {/if}
-        {/key}
-        <Map />
-    {/if}
-</main>
+{#if randomizer}
+    <Randomizer />
+{:else}
+    <IconBar />
+    <main style="width: 100%; position: relative">
+        <GettingStarted hidden={$session !== null} />
+        {#if $session !== null}
+            {#key $session.id}
+                <SideBar />
+                {#if $currentTab == "enemySets" && $currentEm !== null}
+                    {#key $currentEm.Id}
+                        <EmPopup bind:tab={emTab} em={$currentEm} on:close={() => $currentEm = null} />            
+                    {/key}
+                {/if}
+                {#if ($currentTab == "tasks" || $currentTab == "flags" || $currentTab == "talkScripts") && $currentTask !== null}
+                    <Tasks />
+                {/if}
+                {#if $currentTab == "talkScripts" && $currentTalkScript}
+                    <TalkScriptEditor script={$currentTalkScript} />
+                {/if}
+            {/key}
+            <Map />
+        {/if}
+    </main>
+{/if}

@@ -10,6 +10,7 @@
     import { currentTalkScript, currentTab, currentEm, session } from "../../../store";
     import BoolInput from "../../../assets/BoolInput.svelte";
     import RotationInput from "../../../assets/RotationInput.svelte";
+  import EmSelect from "./EmSelect.svelte";
 
     const dispatch = createEventDispatcher();
 
@@ -44,7 +45,7 @@
     $: referencedTalkScripts = $session?.talkScript ?
         $session.talkScript.scripts.filter(x =>
             x.triggerType !== 1 &&
-            x.objId.toUpperCase() == questLookup(em.Id.toString(16), true)?.toUpperCase()&&
+            x.objId.toUpperCase() == questLookup(em.Id, true)?.toUpperCase()&&
             x.setType == em.SetType
         ) : [];
 </script>
@@ -52,14 +53,14 @@
 <div class="emPopup" transition:fly|global={{x: -50, duration: 100, easing: cubicIn}}>
     <header>
         <div class="text">
-            <h1 style="font-weight: bold">{questLookup(em.Id.toString(16))}</h1>
-            <span style="color: #ccc">{questLookup(em.Id.toString(16), true)}</span>
+            <h1 style="font-weight: bold">{questLookup(em.Id)}</h1>
+            <span style="color: #ccc">{questLookup(em.Id, true)}</span>
         </div>
-        {#if questLookup(em.Id.toString(16), true)}
+        {#if questLookup(em.Id, true)}
         <img
             width="150"
             height="150"
-            src={`./icons/${questLookup(em.Id.toString(16), true)}.png`}
+            src={`./icons/${questLookup(em.Id, true)}.png`}
             alt="Icon"
             on:error={(e) => e.target.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="}
         />
@@ -106,10 +107,9 @@
                 label="GroupPos"
                 bind:value={em.GroupPos}
             />
-            <h2 class="sectionHeader">Primary Object - {questLookup(em.Id.toString(16))}</h2>
-            <NumberInput
+            <h2 class="sectionHeader">Primary Object - {questLookup(em.Id)}</h2>
+            <EmSelect
                 label="Id"
-                description={questLookup(em.Id.toString(16), true)}
                 bind:value={em.Id}
             />
             <VectorInput
@@ -124,15 +124,14 @@
                 label="Base Rotation"
                 bind:value={em.BaseRot}
             />
-            <h2 class="sectionHeader">Secondary Object{em.secondaryObjectEnabled ? " - " + questLookup(em.IdL.toString(16)) : ""}</h2>
+            <h2 class="sectionHeader">Secondary Object{em.secondaryObjectEnabled ? " - " + questLookup(em.IdL) : ""}</h2>
             <BoolInput
                 label="Enable Secondary Object"
                 bind:value={em.secondaryObjectEnabled}
             />
             {#if em.secondaryObjectEnabled}
-                <NumberInput
+                <EmSelect
                     label="Id"
-                    description={questLookup(em.IdL.toString(16), true)}
                     bind:value={em.IdL}
                 />
                 <VectorInput
@@ -268,6 +267,7 @@
             />
             <NumberInput
                 label="ExSetFlag"
+                description={em.ExSetFlag === 0 ? "Set if used in a cutscene." : "Set if used in cutscene ev" + em.ExSetFlag.toString(16)}
                 bind:value={em.ExSetFlag}
             />
         {/if}

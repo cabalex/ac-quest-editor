@@ -52,10 +52,10 @@
         for (let emSet of $session.enemySet.sets) {
             for (let em of emSet.ems) {
                 if (
-                    questLookup(em.Id.toString(16), true)?.toUpperCase() === emName.toUpperCase() &&
+                    questLookup(em.Id, true)?.toUpperCase() === emName.toUpperCase() &&
                     em.SetType === type
                 )
-                    return [`${emSet.name} (${emSet.number}) > ${questLookup(em.Id.toString(16))}`, em];
+                    return [`${emSet.name} (${emSet.number}) > ${questLookup(em.Id)}`, em];
             }
         }
         return null;
@@ -89,8 +89,8 @@
             let arr: [string, string][] = [];
             for (let em of set.ems) {
                 arr.push([
-                    `${questLookup(em.Id.toString(16), true)?.toLowerCase()}-${em.SetType}`,
-                    `${questLookup(em.Id.toString(16))}`
+                    `${questLookup(em.Id, true)?.toLowerCase()}-${em.SetType}`,
+                    `${questLookup(em.Id)}`
                 ]);
             }
             options[`${set.number} - ${set.name}`] = arr;

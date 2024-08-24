@@ -1626,9 +1626,15 @@ export function questUnlookup(id: string) {
     }
   }
   
-  // Looks up an object based on its id in quests. Must convert to either number or stringified hex.
-export function questLookup(id: string, returnId=false) {
-    /*
+  // Looks up an object based on its id in quests using bitwise operations.
+export function questLookup(id: number, returnId=false) {
+   let entityId = (id & 0x0FFFF).toString();
+   if (returnId) return questType(id) + entityId;
+   return lookup(questType(id) + entityId);
+  }
+
+export function questType(id: number) {
+  /*
     1 - pl/
     2 - em/
     3 - ???
@@ -1645,35 +1651,16 @@ export function questLookup(id: string, returnId=false) {
     E - ???
     F - ba/?
     */
-    if (!id) {
-      return
+    switch(id >> 16) {
+        case 0x1:
+            return "pl";
+        case 0x2:
+            return "em";
+        case 0xC:
+            return "bg";
+        case 0xF:
+            return "ba";
+        default:
+            return "XX";
     }
-    switch(id[0]) {
-      case "1":
-        if (returnId) {
-          return "pl" + id.substr(1, 4);
-        }
-        return lookup("pl" + id.substr(1, 4));
-      case "2": // 2 == em
-        if (returnId) {
-          return "em" + id.substr(1, 4);
-        }
-        return lookup("em" + id.substr(1, 4));
-      // case 4 is something with a balloon in it.
-      // See "File 06 The Lost Balloon".
-      case "c":
-      case "e":
-        if (returnId) {
-          return "bg" + id.substr(1, 4);
-        }
-        return lookup("bg" + id.substr(1, 4));
-      case "f":
-        if (returnId) {
-          return "ba" + id.substr(1, 4);
-        }
-        return lookup("ba" + id.substr(1, 4));
-      default:
-        return id;
-    }
-  }
-  
+}

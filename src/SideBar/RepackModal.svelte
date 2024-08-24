@@ -22,7 +22,7 @@
         </button>
     </header>
     <p>Congratulations! You just made an Astral Chain LayeredFS mod!</p>
-    <p>Extract this ZIP file to the mod folder of your choice and start playing.</p>
+    <p>Extract this ZIP file to the mods folder of your choice and start playing.</p>
     <code>mod-{$session?.id}.zip</code>
     <button on:click={dontShowAgain}>Don't show me this again</button>
 </Modal>

@@ -89,7 +89,7 @@
         {#each set.ems as em}
             <button class="em" class:active={$currentEm == em} on:click={focusEm.bind(null, em)}>
                 <IconUser />
-                <span>{questLookup(em.Id.toString(16))}</span>
+                <span>{questLookup(em.Id)}</span>
                 <IconChevronRight />
             </button>
         {/each}

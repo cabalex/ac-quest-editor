@@ -298,7 +298,7 @@ export class Em {
                 numberToNode("GroupPos", this.GroupPos),
                 numberToNode("GridDisp", this.GridDisp),
                 numberToNode("EventSuspend", this.EventSuspend),
-                numberToNode("SimpleSubspaceSuspend", this.SimpleSubspaceSuspend)
+                numberToNode("SimpleSubspaceSuspend", this.SimpleSubspaceSuspend || 0) // doesn't exist in q2950?
             ]
         }
 
