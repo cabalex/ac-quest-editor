@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { questLookup } from "../../../_lib/lookupTable";
+    import { questType, questUnlookup, questLookup } from "../../../_lib/lookupTable";
 
     export let label: string;
     export let description: string|null = null;
@@ -8,17 +8,15 @@
     export let value = 0;
 
 
-    $: category = (questLookup(value, true) || value.toString(16)).slice(0, 2);
-    $: id = value.toString(16).slice(1);
+    let category = questType(value);
+    let id = value.toString(16).slice(1);
 
-    $: {
-        if (category.length === 2 && id.length === 4) {
-            change();
+    function change(newCategory: string, newId: string) {
+        if (!isNaN(parseInt(newId, 16))) {
+            id = newId;
         }
-    }
-
-    function change() {
-        value = parseInt(category + id, 16);
+        category = newCategory;
+        value = questUnlookup(category + id);
     }
 </script>
 
@@ -28,16 +26,16 @@
         {#if description}
             <p>{description}</p>
         {/if}
+        {questLookup(value)}
     </div>
-    <select bind:value={category}>
+    <select value={category} on:change={(e) => change(e.target.value, id)}>
         <option>em</option>
         <option>pl</option>
         <option>ba</option>
         <option>bg</option>
         <option>es</option>
     </select>
-    <input type="text" maxlength="4" placeholder={placeholder} bind:value={id} />
-    {questLookup(value)}
+    <input type="text" maxlength="4" placeholder={placeholder} value={id} on:change={(e) => change(category, e.target.value)} />
 </div>
 
 <style>

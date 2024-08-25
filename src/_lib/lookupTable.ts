@@ -1609,9 +1609,6 @@ export function lookup(name: string) {
 }
 
 export function questUnlookup(id: string) {
-    if (!id) {
-      return
-    }
     switch(id.toLowerCase().slice(0, 2)) {
       case "pl":
         return parseInt("1" + id.slice(2, 6), 16);
@@ -1628,7 +1625,7 @@ export function questUnlookup(id: string) {
   
   // Looks up an object based on its id in quests using bitwise operations.
 export function questLookup(id: number, returnId=false) {
-   let entityId = (id & 0x0FFFF).toString();
+   let entityId = (id & 0x0FFFF).toString(16).padStart(4, "0");
    if (returnId) return questType(id) + entityId;
    return lookup(questType(id) + entityId);
   }
@@ -1661,6 +1658,7 @@ export function questType(id: number) {
         case 0xF:
             return "ba";
         default:
+            console.warn("Unknown quest entity ID: " + (id >> 16).toString(16));
             return "XX";
     }
 }

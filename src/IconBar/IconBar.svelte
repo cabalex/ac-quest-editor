@@ -12,6 +12,7 @@
     import { zipSync } from "fflate";
 
     let packaging: null|string[] = null;
+    let logElem: HTMLDivElement;
     async function exportAllSessionsAsMod() {
         const start = performance.now();
         packaging = ["<b>[!] Exporting all sessions as a mod...</b>"];
@@ -36,6 +37,7 @@
             await new Promise(r => setTimeout(r, 0));
             const repacked = await repackPTD($textCache);
             packaging = [...packaging, "[!] Making PKZ..."];
+            await new Promise(r => setTimeout(r, 0));
 
             let response = await fetch('./Text.pkz');
             if (!response.ok) {
@@ -61,6 +63,7 @@
         }
 
         packaging = [...packaging, "[!] Zipping..."];
+        await new Promise(r => setTimeout(r, 0));
 
         const zipped = zipSync(files);
 
@@ -73,9 +76,15 @@
         URL.revokeObjectURL(url);
 
         const finishedZipping = performance.now();
-        packaging = [...packaging, `[!] Mod packaging complete! :D It took ${Math.round(finishedZipping - start)}ms.`];
-        await new Promise(r => setTimeout(r, 3000));
+        packaging = [...packaging, `[!] Mod packaging complete! :D It took ${Math.round(finishedZipping - start)}ms.`, 'Dismissing in 10 seconds...'];
+        await new Promise(r => setTimeout(r, 10000));
         packaging = null;
+    }
+
+    $: {
+        if (packaging !== null && logElem) {
+            logElem.scrollTop = logElem.scrollHeight;
+        }
     }
 </script>
 
@@ -92,27 +101,29 @@
     </button>
     {#if $sessions.length > 0}
         <div style="flex-grow: 1" />
-        <hr />
-        <button
-            class="session"
-            title="Export all sessions as mod"
-            class:active={packaging !== null}
-            on:click={exportAllSessionsAsMod}
-        >
-            {#if packaging !== null && packaging[packaging.length - 1].startsWith("[!] Mod packaging complete! :D")}
-                <IconCheck />
-            {:else if packaging !== null}
-                <Loading text="" />
-            {:else}
-                <IconPackages />
-            {/if}
-        </button>
+        <footer>
+            <hr />
+            <button
+                class="session"
+                title="Export all sessions as mod"
+                class:active={packaging !== null}
+                on:click={exportAllSessionsAsMod}
+            >
+                {#if packaging !== null && packaging[packaging.length - 1].startsWith("Dismissing in")}
+                    <IconCheck />
+                {:else if packaging !== null}
+                    <Loading text="" />
+                {:else}
+                    <IconPackages />
+                {/if}
+            </button>
+        </footer>
     {/if}
 </div>
 
 {#if packaging !== null}
     <div class="iconTooltip" style="bottom: -5px">
-        <div class="log">
+        <div class="log" bind:this={logElem}>
             {#each packaging as logItem}
                 <p>{@html logItem}</p>
             {/each}
@@ -138,6 +149,12 @@
 
     .iconBar::-webkit-scrollbar {
         width: 0px;
+    }
+
+    footer {
+        position: sticky;
+        bottom: 0;
+        background-color: #111;
     }
 
     .session {

@@ -20,19 +20,6 @@ class BXMStrings {
         return byteOffset;
     }
 
-    offset(str: string) {
-        let byteOffset = 0;
-        for (let i = 0; i < this.rawStrings.length; i++) {
-            byteOffset += this.encodedStrings[i].byteLength;
-            if (this.rawStrings[i] === str) return byteOffset;
-        }
-        return -1;
-    }
-
-    includes(str: string) {
-        return this.rawStrings.includes(str);
-    }
-
     get byteLength() {
         return this.encodedStrings.reduce((acc, curr) => acc + curr.byteLength, 0);
     }
