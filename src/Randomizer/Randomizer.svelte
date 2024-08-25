@@ -49,7 +49,7 @@
         done = true;
         let end = performance.now();
         time = end - start;
-        console.log(`Randomize took ${(end - start) / 1000 / 60} minutes (${end - start}ms)`);
+        console.log(`Randomize took ${Math.floor(time / 1000 / 60)}m ${Math.floor(time / 1000 % 60)}s (${end - start}ms)`);
     }
 </script>
 
