@@ -285,7 +285,12 @@
     }
 
     onMount(() => {
-        Blockly.defineBlocksWithJsonArray([...systemBlocks, ...ifBlocks, ...execBlocks]);
+        // delete all blocks to prevent warn spam
+        const blocks = [...systemBlocks, ...ifBlocks, ...execBlocks];
+        for (let block of blocks) {
+            delete Blockly.Blocks[block.type]
+        }
+        Blockly.defineBlocksWithJsonArray(blocks);
 
         // initialize plugins
         const multiselectPlugin = new Multiselect(workspace);

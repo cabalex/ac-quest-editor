@@ -109,8 +109,10 @@ const questTable = {
     "q2401": "File 04 Street Toughs",
     "q2402": "File 04 Her Biggest Fan",
     "q2403": "File 04 The Haunted Dumpster",
+    "q2430": "File 04 Ark Mall Exploration 1",
     "q2431": "File 04 Azure Plaza",
     "q2432": "File 04 Berserk Arm Legion",
+    "q2433": "File 04 Ark Mall Exploration 2",
     "q2434": "File 04 Chimera Takedown",
     "q2435": "File 04 Chimera Takedown",
     "q2436": "File 04 Mall Cleanup",
@@ -157,6 +159,7 @@ const questTable = {
     "q26e5": "File 06 Chimera Takedown",
     "q26f0": "File 06 Neuron in Need",
     "q26f0_2": "File 06 Homunculus Beta", // weird... shows up in translation files
+    "q26f5": "File 06 Homunculus Cutscene Handling",
     "q3603": "File 06 Staying Informed",
     "q3605": "File 06 Graffiti Bust",
     "q3610": "File 06 The Lost Balloon",
@@ -1298,8 +1301,10 @@ const questToArea = {
     "q2401": "r200",
     "q2402": "r200",
     "q2403": "r200",
+    "q2430": "r400",
     "q2431": "r400",
     "q2432": "r400",
+    "q2433": "r400",
     "q2434": "r400",
     "q2435": "r400",
     "q2436": "r400",
@@ -1663,3 +1668,5 @@ export function questType(id: number) {
             return "XX";
     }
 }
+
+export { em, pl, wp, ba, bg }

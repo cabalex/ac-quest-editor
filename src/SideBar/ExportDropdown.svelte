@@ -24,7 +24,7 @@
                     [`romfs/quest/quest${$session?.id}.dat`]: new Uint8Array(arrayBuffer),
                 }
 
-                if ($textCache) {
+                if ($textCache && $session?.talkScript) {
                     console.log("Repacking text file with modifications...");
                     const repacked = await repackPTD($textCache);
                     console.log("Making PKZ...");
@@ -111,8 +111,8 @@
             <button class="dropdownOption" on:click={repack}>
                 <IconDownload />
                 <div class="text">
-                    <span>Repack DAT</span>
-                    <span style="font-weight: normal; font-size: 14px">Does not repack Text data. Only do this if you haven't modified TalkScripts.</span>
+                    <span>DAT only</span>
+                    <span style="font-weight: normal; font-size: 14px">Does not repack Text data. Will not work if TalkScripts were modified.</span>
                 </div>
             </button>
         {/if}
