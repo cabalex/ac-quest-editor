@@ -133,7 +133,6 @@
     let panToEmEnabled = true;
     function panToEm(em: Em) {
         if (!panToEmEnabled || !panzoom) return;
-        console.log(MAPS[map].findIndex(x => x.bottom <= em.Trans.y && x.top >= em.Trans.y));
         if (Object.keys(MAPS).includes(map)) {
             let floorToChange = MAPS[map].findIndex(x => x.bottom <= em.Trans.y && x.top >= em.Trans.y);
             if (floorToChange !== -1) floor = floorToChange;
@@ -174,7 +173,7 @@
         // y axis calculation
         const newY = viewableAreaHeight / 2 - realHeight * yPercent
 
-        panzoom.pan(newX, newY)
+        panzoom.pan(newX, newY, { duration: 200 })
     }
 
 
@@ -196,7 +195,7 @@
     }
 
     function layerFilter(y: number) {
-        if (!MAPS[map]) return true;
+        if (!MAPS[map] || !MAPS[map][floor]) return true;
         return MAPS[map][floor].top >= y && MAPS[map][floor].bottom <= y;
     }
 </script>

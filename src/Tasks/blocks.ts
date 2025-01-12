@@ -391,7 +391,7 @@ export const ifBlocks = [
         trueFalse("IFIsCombatBarrier", "inside", "outside")]
     ),
     ifDefine("if-27", "If fade transition is %1 (type %2)", [
-        trueFalse("IFbCheck", "playing", "not playing"),
+        trueFalse("IFbCheck", "active", "inactive"),
         {
             "type": "field_number",
             "name": "IFType",
@@ -431,7 +431,7 @@ export const ifBlocks = [
         trueFalse("IFbCheck")]
     ),
     ifDefine("if-35", "If Player is %1", [
-        trueFalse("IFbCheck", "stopped", "moving")]
+        trueFalse("IFbCheck", "not moving", "moving")]
     ),
     ifDefine("if-36", "If %1", [
         trueFalse("IFbCheck")]
