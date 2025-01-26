@@ -99,7 +99,7 @@
 		}}
 	>
 		<IconPlus />
-		Add Line
+		Add line
 	</button>
 </main>
 

@@ -52,8 +52,13 @@
 				}
 				json[key] = new Map(Object.entries(value as { [key: string]: [string, string] }));
 			}
+			const oldSection = section;
+			section = null;
+			// wait for the section to save before overwriting
+			await new Promise((r) => setTimeout(r, 500));
 			$textCache = { strings: json };
 			importSuccess = true;
+			section = oldSection;
 			setTimeout(() => (importSuccess = false), 1000);
 		};
 		input.click();
@@ -129,7 +134,7 @@
 		<IconDownload />
 		Export Text as JSON
 	</button>
-	<button on:click={importText} style="color: var(--danger)">
+	<button on:click={importText} style={importSuccess ? "" : "color: var(--danger)"}>
 		{#if importSuccess}
 			<IconCheck />
 			Import successful!
