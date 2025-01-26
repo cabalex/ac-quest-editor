@@ -10,6 +10,7 @@
     import type { Em } from "../../../_lib/types/EnemySet";
     import SelectNumberInput from "../../../assets/SelectNumberInput.svelte";
     import SelectStringInput from "../../../assets/SelectStringInput.svelte";
+	import Quest from "../../../_lib/Quest";
 
     export let script: Script;
 
@@ -26,7 +27,7 @@
 
 
     function taskReferences() {
-        if ($session === null || script.triggerType !== 1) return [];
+        if (!($session instanceof Quest) || script.triggerType !== 1) return [];
 
         let references: [string, number][] = [];
         for (let i = 0; i < $session.questData.tasks.length; i++) {
@@ -47,7 +48,7 @@
     }
 
     function getEmReference(emName: string, type: number): [string, Em]|null {
-        if ($session === null) return null;
+        if (!($session instanceof Quest)) return null;
 
         for (let emSet of $session.enemySet.sets) {
             for (let em of emSet.ems) {
@@ -62,6 +63,7 @@
     }
 
     function changeEmReference(e: any) {
+        if (!($session instanceof Quest)) return;
         // get the optgroup that the option is in
         let opt = e.detail[1].target.querySelector(`option[value="${e.detail[0]}"]`);
         let optgroup = opt?.parentElement?.label;
@@ -84,8 +86,9 @@
 
 
     function emDropdownOptions(): {[key: string]: [string, string][]} {
+        if (!($session instanceof Quest)) return {};
         let options: {[key: string]: [string, string][]} = {};
-        for (let set of ($session?.enemySet.sets || [])) {
+        for (let set of ($session.enemySet.sets || [])) {
             let arr: [string, string][] = [];
             for (let em of set.ems) {
                 arr.push([

@@ -13,6 +13,7 @@
     import { blockIds, systemBlocks, ifBlocks, execBlocks, toolbox } from './blocks';
     import { Command, TaskList } from '../_lib/types/QuestData';
     import theme from './theme';
+	import Quest from '../_lib/Quest';
 
     let workspace: Blockly.WorkspaceSvg;
   
@@ -139,6 +140,8 @@
             }
         }
 
+        console.log(lineLists);
+
         return lineLists;
     }
 
@@ -148,6 +151,7 @@
         if (saveExisting && Blockly.Xml.workspaceToDom(workspace).outerHTML !== workspaceCache) {
             saveTaskList();
         }
+        console.log(taskList);
         // sorta inefficient and lazy method but its whatever
         let xml = '<xml>'
         
@@ -269,11 +273,10 @@
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => {
             let saved = saveTaskList();
-            if (saved && $session && $currentTask !== null && $session.questData.tasks[$currentTask])
+            if (saved && $session instanceof Quest && $currentTask !== null && $session.questData.tasks[$currentTask])
                 $session.questData.tasks[$currentTask].lineLists = saved;
         }, 1000);
-        return;
-
+        /*
         // sanity check between it and original
         let comparing = $session?.questData.tasks[$currentTask as number].lineLists;
 
@@ -282,6 +285,7 @@
         }
         
         return;
+        */
     }
 
     onMount(() => {
@@ -300,7 +304,7 @@
 
     let lastTaskRendered = -1;
     const render = () => {
-        if ($session !== null && $currentTask !== null && $session.questData.tasks[$currentTask] && workspace) {
+        if ($session instanceof Quest && $currentTask !== null && $session.questData.tasks[$currentTask] && workspace) {
             if (lastTaskRendered !== -1) saveTaskList();
             renderTaskList($session.questData.tasks[$currentTask], false);
             lastTaskRendered = $currentTask;
@@ -309,7 +313,7 @@
 
     onDestroy(() => {
         let saved = saveTaskList();
-            if (saved && $session && $currentTask !== null && $session.questData.tasks[$currentTask])
+            if (saved && $session instanceof Quest && $currentTask !== null && $session.questData.tasks[$currentTask])
                 $session.questData.tasks[$currentTask].lineLists = saved;
     })
 

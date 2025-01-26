@@ -13,6 +13,8 @@
     let repacking = false;
     let repackModalOpen = false;
     async function repackageMod() {
+        if (typeof $session !== "object") return;
+
         repacking = true;
         repackDropdownOpen = false;
         
@@ -72,6 +74,7 @@
         
         // must wrap in setTimeout to ensure the DOM updates beforehand
         setTimeout(async () => {
+            if (typeof $session !== "object") return;
             let arrayBuffer = await $session?.repack($textCache || undefined).catch(console.error);
             if (arrayBuffer) {
                 let blob = new Blob([arrayBuffer], { type: "application/octet-stream" });

@@ -4,6 +4,10 @@ import type { FileData, PartialFile } from "./extract";
 
 let zstdDecompress: any = null;
 
+ZstdInit().then((zstd) => {
+    zstdDecompress = zstd.ZstdStream;
+});
+
 async function extract_partial(partialFile: PartialFile, fileData: FileData) : Promise<{name: string, data: ArrayBuffer}> {
     // Create a new file reader
     let platinumFileReader = new PlatinumFileReader(fileData.baseFile);

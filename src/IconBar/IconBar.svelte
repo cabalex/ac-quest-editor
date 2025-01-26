@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { IconPlus, IconCheck, IconPackages } from '@tabler/icons-svelte';
+    import { IconPlus, IconCheck, IconPackages, IconLetterCase } from '@tabler/icons-svelte';
     import { session, sessions, textCache } from '../store';
     import Loading from '../assets/Loading.svelte';
     import Icon from './Icon.svelte';
@@ -50,7 +50,7 @@
 
             let fileToReplace = pkzFiles.find(f => f.name == "TalkSubtitleMessage_USen.bin");
             if (fileToReplace) {
-                fileToReplace.data = new Uint8Array(repacked);
+                fileToReplace.data = repacked;
             } else {
                 packaging = [...packaging, '<span style="color: var(--danger)">[-] ERROR: Couldn\'t find TalkSubtitleMessage_USen.bin in Text.pkz! This error shouldn\'t occur...</span>'];
                 console.error("Couldn't find TalkSubtitleMessage_USen.bin in Text.pkz!");
@@ -99,26 +99,33 @@
     >
         <IconPlus />
     </button>
-    {#if $sessions.length > 0}
-        <div style="flex-grow: 1" />
-        <footer>
-            <hr />
-            <button
-                class="session"
-                title="Export all sessions as mod"
-                class:active={packaging !== null}
-                on:click={exportAllSessionsAsMod}
-            >
-                {#if packaging !== null && packaging[packaging.length - 1].startsWith("Dismissing in")}
-                    <IconCheck />
-                {:else if packaging !== null}
-                    <Loading text="" />
-                {:else}
-                    <IconPackages />
-                {/if}
-            </button>
-        </footer>
-    {/if}
+    <div style="flex-grow: 1" />
+    <footer>
+        <hr />
+        <button
+            class="session"
+            title="Manage in-game text"
+            style="margin-bottom: 5px"
+            class:active={$session === "text"}
+            on:click={() => $session = "text"}
+        >
+            <IconLetterCase />
+        </button>
+        <button
+            class="session"
+            title="Export all sessions as mod"
+            class:active={packaging !== null}
+            on:click={exportAllSessionsAsMod}
+        >
+            {#if packaging !== null && packaging[packaging.length - 1].startsWith("Dismissing in")}
+                <IconCheck />
+            {:else if packaging !== null}
+                <Loading text="" />
+            {:else}
+                <IconPackages />
+            {/if}
+        </button>
+    </footer>
 </div>
 
 {#if packaging !== null}

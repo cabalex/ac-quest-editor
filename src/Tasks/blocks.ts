@@ -1,6 +1,7 @@
 import Blockly from "blockly";
 import { get } from "svelte/store";
 import { session } from "../store";
+import Quest from "../_lib/Quest";
 
 // full list of block ids
 export const blockIds = {};
@@ -1182,7 +1183,7 @@ attemptRegisterExtension('questflag', function() {
     (this.getInput('ExecFlagNo_dummy') || this.getInput('IFFlagNo_dummy')).appendField(
         new Blockly.FieldDropdown(() => {
             let ses = get(session);
-            if (!ses) return fallbackFlags;
+            if (!(ses instanceof Quest)) return fallbackFlags;
             let options = [];
             for (let i = 0; i < ses.questData.questFlags.length; i++) {
                 options.push([`(${i}) ${ses.questData.questFlags[i]}`, i.toString()])
@@ -1203,7 +1204,7 @@ attemptRegisterExtension('saveflag', function() {
             }
             
             let ses = get(session);
-            if (!ses) return fallbackFlags;
+            if (!(ses instanceof Quest)) return fallbackFlags;
             let options = [];
             for (let i = 0; i < ses.questData.saveFlags.length; i++) {
                 options.push([`(${i}) ${ses.questData.saveFlags[i]}`, i.toString()])
@@ -1218,7 +1219,7 @@ attemptRegisterExtension('emgroup', function() {
     this.getInput('EXECGroupNo_dummy').appendField(
         new Blockly.FieldDropdown(() => {
             let ses = get(session);
-            if (!ses || !ses?.enemySet.sets.length) return [["NO ENEMY SETS FOUND...", "0"]];
+            if (!(ses instanceof Quest) || !ses.enemySet.sets.length) return [["NO ENEMY SETS FOUND...", "0"]];
             return ses.enemySet.sets.map(set => [`(${set.number}) ${set.name}`, set.number.toString()]);
         }),
         'EXECGroupNo'
@@ -1229,7 +1230,7 @@ attemptRegisterExtension('task', function() {
     this.getInput('ExecTaskNo_dummy').appendField(
         new Blockly.FieldDropdown(() => {
             let ses = get(session);
-            if (!ses || !ses?.questData.tasks.length) return [["NO TASKS FOUND...", "0"]];
+            if (!(ses instanceof Quest) || !ses?.questData.tasks.length) return [["NO TASKS FOUND...", "0"]];
             return ses.questData.tasks.map((task, i) => [`(${i}) ${task.name}`, i.toString()]);
         }),
         'ExecTaskNo'
@@ -1241,7 +1242,7 @@ attemptRegisterExtension('zone', function() {
         new Blockly.FieldDropdown(() => {
             let ses = get(session);
             if (!ses) return [];
-            if (!ses || !ses?.questData.areas.length) return [["NO ZONES FOUND...", "0"]];
+            if (!(ses instanceof Quest) || !ses?.questData.areas.length) return [["NO ZONES FOUND...", "0"]];
             return ses.questData.areas.map(zone => [`(${zone.index}) ${zone.name}`, zone.index.toString()]);
         }),
         'IFIndexNo'

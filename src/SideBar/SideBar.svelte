@@ -11,6 +11,8 @@
     import TalkScripts from "./tabs/TalkScripts/TalkScripts.svelte";
     import Flags from "./tabs/Flags.svelte";
     import ExportDropdown from "./ExportDropdown.svelte";
+    import "./SideBar.css";
+	import Quest from "../_lib/Quest";
 
     function deleteSession() {
         if (confirm("Are you sure you want to delete this session? It will be lost forever! (Repack if you want to come back to this later.)")) {
@@ -21,6 +23,7 @@
     }
 
     function setTab(tab: string) {
+        if (typeof $session !== "object") return;
         if ($currentTab == tab) {
             $currentTab = null;
             if ($session) $session.tab = null;
@@ -29,15 +32,25 @@
             if ($session) $session.tab = tab;
         }
     }
+    
+    const ifSession = () => {
+        if ($session instanceof Quest) {
+            return $session;
+        } else {
+            return null;
+        }
+    }
+
+    $: validSession = ifSession();
 </script>
 
 <aside transition:fly={{x: -200, duration: 200, easing: cubicInOut}}>
     <header>
         <div class="text">
             <h1>
-                Quest <b>{$session?.id}</b>
+                Quest <b>{validSession?.id || "0000"}</b>
             </h1>
-            <span>{lookup(`quest${$session?.id}`)}</span>
+            <span>{lookup(`quest${validSession?.id || "0000"}`)}</span>
         </div>
     </header>
     <button class:active={$currentTab == "about"} on:click={() => setTab("about")}>
@@ -64,7 +77,7 @@
         Flags
     </button>
     <button class:active={$currentTab == "talkScripts"} on:click={() => setTab("talkScripts")}>
-        {#if $session?.talkScript}
+        {#if validSession?.talkScript}
             <IconMessage />
         {:else}
             <IconMessageX />
@@ -79,78 +92,18 @@
         Delete
     </button>
 </aside>
-{#if $session != null}
+{#if validSession != null}
     {#if $currentTab == "about"}
-        <About session={$session} />
+        <About session={validSession} />
     {:else if $currentTab == "enemySets"}
-        <EnemySets session={$session} />
+        <EnemySets session={validSession} />
     {:else if $currentTab == "zones"}
-        <Areas session={$session} />
+        <Areas session={validSession} />
     {:else if $currentTab == "tasks"}
-        <Tasks session={$session} />
+        <Tasks session={validSession} />
     {:else if $currentTab == "flags"}
-        <Flags session={$session} />
+        <Flags session={validSession} />
     {:else if $currentTab == "talkScripts"}
-        <TalkScripts session={$session} />
+        <TalkScripts session={validSession} />
     {/if}
 {/if}
-
-<style>
-    aside {
-        position: absolute;
-        top: 0;
-        left: 0;
-        padding: 10px;
-        height: calc(100% - 20px);
-        border-right: 1px solid #444;
-        background-color: #222;
-        width: 200px;
-        z-index: 10;
-
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    header {
-        width: calc(100% - 20px);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 10px;
-    }
-    hr {
-        width: calc(100% - 20px);
-        border-color: #666;
-        border-style: solid;
-    }
-    h2.sectionHeader {
-        width: calc(100% - 20px);
-        text-align: left;
-        font-size: 0.9em;
-        font-weight: bold;
-        color: #999;
-        margin: 5px;
-        margin-top: 15px;
-        text-transform: uppercase;
-    }
-    button {
-        width: 100%;
-        margin-bottom: 5px;
-        justify-content: flex-start;
-        background-color: transparent;
-    }
-    button:hover {
-        background-color: #444;
-    }
-    button:active, button.active {
-        background-color: #666;
-        cursor: default;
-    }
-    :global(.loadingIcon) {
-        animation: spin 2s linear infinite;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>

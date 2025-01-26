@@ -57,6 +57,7 @@
     </div>
     <input type="number" style="width: 70px" placeholder={placeholder} value={degrees} on:change={changeDegrees} />
     <span>degrees</span>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="rotationPicker" bind:this={elem} on:mousedown={onDown} on:mouseup={onUp} on:mousemove={onMove}>
         <div class="knob" style={`transform: ${transform}`}>
             <IconCaretUpFilled />

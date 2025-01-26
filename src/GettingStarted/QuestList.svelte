@@ -1,9 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import VirtualList from "svelte-virtual-list-ce";
+    import VirtualList from "../assets/VirtualList.svelte";
     import extractPKZ, { type FileData, type PartialFile } from "../_lib/files/PKZ/extract";
-    import repackPTD from "../_lib/files/PTD/repack";
-    import extractPTD from "../_lib/files/PTD/extract";
     import extract_partial from "../_lib/files/PKZ/extract_partial";
     import PlatinumFileReader from "../_lib/files/PlatinumFileReader";
     import { IconExclamationCircle, IconFile, IconSearch, IconX } from "@tabler/icons-svelte";
@@ -102,7 +100,11 @@
         <button class="transparentBtn" on:click={clickFile.bind(null, item)} style="width: 400px">
             <IconFile />
             <div class="text">
-                <span>{lookup(item.name.slice(0, -4))}</span>
+                {#if !lookup(item.name.slice(0, -4)).startsWith("quest")}
+                    <span>{lookup(item.name.slice(0, -4))}</span>
+                {:else}
+                    <div style="background-color: red">UNKNOWN</div>
+                {/if}
                 <span class="id">QUEST {item.name.slice(5, 9)} - {readableBytes(item.size)}</span>
             </div>
         </button>

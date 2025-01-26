@@ -147,7 +147,7 @@ async function repack(data: FileData) : Promise<ArrayBuffer> {
         y = x + 12 + outputSectionsArrayBuffers[i+1].hashes.byteLength;
     }
 
-    console.log(outputSectionsArrayBuffers);
+    //console.log(outputSectionsArrayBuffers);
     
     for (var i = 0; i < outputSectionsArrayBuffers.length; i++) {
         outputArrayBuffer = concatArrayBuffer(outputArrayBuffer,
