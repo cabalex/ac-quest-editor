@@ -1,12 +1,22 @@
+<script context="module" lang="ts">
+	import { writable } from 'svelte/store';
+
+	export const writableMap = writable<number>(0);
+	export const updateMap = () => {
+		console.log('updating writable');
+		writableMap.update((n) => n + 1);
+	};
+</script>
+
 <script lang="ts">
 	import Panzoom, { type PanzoomObject } from '@panzoom/panzoom';
 	import { onDestroy, onMount } from 'svelte';
 	import { questAreaLookup } from '../_lib/lookupTable';
-	import { currentTab, currentEm, session, showAreasOnMap } from '../store';
+	import { currentTab, currentEm, currentArea, session, showAreasOnMap } from '../store';
 	import { Em } from '../_lib/types/EnemySet';
 	import MapEm from './MapEm.svelte';
-	import Vector from '../_lib/Vector';
 	import Quest from '../_lib/Quest';
+	import type { AreaGroup } from '../_lib/types/QuestData';
 
 	let mapElem: HTMLDivElement;
 
@@ -123,10 +133,10 @@
 		if (!panzoom || (tab === null && !lastOpen) || (tab !== null && lastOpen)) return;
 		let zoom = panzoom.getScale();
 		if ($currentTab === null) {
-			panzoom?.pan(-210 / zoom, 0, { animate: true, relative: true });
+			panzoom?.pan(-110 / zoom, 0, { animate: true, relative: true });
 			lastOpen = false;
 		} else {
-			panzoom?.pan(210 / zoom, 0, { animate: true, relative: true });
+			panzoom?.pan(110 / zoom, 0, { animate: true, relative: true });
 			lastOpen = true;
 		}
 	}
@@ -183,6 +193,7 @@
 
 	$: toggleOpen($currentTab);
 	let cachedEm: Em | null = null;
+	let cachedArea: AreaGroup | null = null;
 
 	let x = 0;
 	let y = 0;
@@ -200,6 +211,7 @@
 	}
 </script>
 
+<!-- Key here to update map on writable change -->
 <div class="mapContainer" class:full={$currentTab === null}>
 	<select
 		bind:value={map}
@@ -239,12 +251,16 @@
 		on:mousemove={calculateMouseCoords}
 		on:panzoomstart={() => {
 			cachedEm = $currentEm;
+			cachedArea = $currentArea;
 			$currentEm = null;
+			$currentArea = null;
 		}}
 		on:panzoomend={() => {
 			panToEmEnabled = false;
 			$currentEm = cachedEm;
+			$currentArea = cachedArea;
 			cachedEm = null;
+			cachedArea = null;
 			setTimeout(() => (panToEmEnabled = true), 0);
 		}}
 	>
@@ -255,56 +271,64 @@
 			{/each}
 		</div>
 		{#if $session instanceof Quest}
-			{#each $session?.enemySet.sets || [] as set}
-				{#each set.ems.filter((x) => layerFilter(x.Trans.y)) as em}
-					<MapEm
-						{em}
-						{set}
-						{cachedEm}
-						on:click={() => {
-							$currentTab = 'enemySets';
-							$currentEm = em;
-							panToEm(em);
-						}}
-					/>
+			{#key $writableMap}
+				{#each $session?.enemySet.sets || [] as set}
+					{#each set.ems.filter((x) => layerFilter(x.Trans.y)) as em}
+						<MapEm
+							{em}
+							{set}
+							{cachedEm}
+							on:click={() => {
+								$currentTab = 'enemySets';
+								$currentEm = em;
+								panToEm(em);
+							}}
+						/>
+					{/each}
 				{/each}
-			{/each}
-            <svg class="areas" height="4400" width="4400" xmlns="http://www.w3.org/2000/svg">
-                {#if $showAreasOnMap}
-                    {#each $session?.questData.areas || [] as areaGroup}
-                        {#each areaGroup.groups.filter((x) => layerFilter(x.center.y)) as area}
-                            {#if area.type === 1}
-                                <polygon
-                                    points={area.points
-                                        .map((coord) => `${toMap(-coord.z)},${toMap(coord.x)}`)
-                                        .join(' ')}
-                                    style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
-                                />
-                            {:else}
-                                <circle
-                                    cx={toMap(-area.center.z)}
-                                    cy={toMap(area.center.x)}
-                                    r={area.radius * 2}
-                                    style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
-                                />
-                            {/if}
-                            <text
-                                x={toMap(-area.center.z)}
-                                y={toMap(area.center.x)}
-                                fill="hsl({areaGroup.index * 10}, 50%, 10%)"
-                                font-size="10"
-                                width="{area.type === 1
-                                    ? (area.points[0].z - area.points[1].z) * 2
-                                    : area.radius * 4}px"
-                                text-anchor="middle"
-                                alignment-baseline="middle"
-                            >
-                                {areaGroup.name}
-                            </text>
-                        {/each}
-                    {/each}
-                {/if}
-            </svg>
+				{#if $showAreasOnMap}
+					{#each $session?.questData.areas || [] as areaGroup}
+						<svg
+							class="areas"
+							class:active={$currentArea === areaGroup || cachedArea === areaGroup}
+							height="4400"
+							width="4400"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							{#each areaGroup.groups.filter((x) => layerFilter(x.center.y)) as area}
+								{#if area.type === 1}
+									<polygon
+										points={area.points
+											.map((coord) => `${toMap(-coord.z)},${toMap(coord.x)}`)
+											.join(' ')}
+										style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
+									/>
+								{:else}
+									<circle
+										cx={toMap(-area.center.z)}
+										cy={toMap(area.center.x)}
+										r={area.radius * 2}
+										style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
+									/>
+								{/if}
+								<text
+									x={toMap(-area.center.z)}
+									y={toMap(area.center.x)}
+									fill="hsl({areaGroup.index * 10}, 50%, 10%)"
+									font-size="10"
+									width="{area.type === 1
+										? (area.points[0].z - area.points[1].z) * 2
+										: area.radius * 4}px"
+									text-anchor="middle"
+									alignment-baseline="middle"
+								>
+									{areaGroup.name}
+								</text>
+							{/each}
+						</svg>
+					{/each}
+				{/if}
+			{/key}
 		{/if}
 	</div>
 </div>
@@ -361,5 +385,10 @@
 		position: absolute;
 		top: 0;
 		left: 0;
+	}
+	.areas.active {
+		stroke: hsl(0, 0%, 100%);
+		stroke-width: 2;
+		z-index: 10;
 	}
 </style>

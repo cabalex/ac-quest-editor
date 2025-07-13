@@ -1,11 +1,19 @@
 <script lang="ts">
-	import { currentTab, currentEm, currentTask, currentTalkScript, session } from './store';
+	import {
+		currentTab,
+		currentEm,
+		currentTask,
+		currentTalkScript,
+		session,
+		currentArea
+	} from './store';
 	import IconBar from './IconBar/IconBar.svelte';
 	import SideBar from './SideBar/SideBar.svelte';
 	import Map from './Map/Map.svelte';
 	import GettingStarted from './GettingStarted/GettingStarted.svelte';
 	import Tasks from './Tasks/Tasks.svelte';
 	import EmPopup from './SideBar/tabs/EnemySets/EmPopup.svelte';
+	import AreaPopup from './SideBar/tabs/Areas/AreaPopup.svelte';
 	import TalkScriptEditor from './TalkScriptEditor/TalkScriptEditor.svelte';
 	import Randomizer from './Randomizer/Randomizer.svelte';
 	import TextEditor from './TextEditor/TextEditor.svelte';
@@ -15,6 +23,7 @@
 		if (!($session instanceof Quest)) {
 			$currentTab = null;
 			$currentEm = null;
+			$currentArea = null;
 			$currentTask = null;
 			$currentTalkScript = null;
 		}
@@ -40,6 +49,11 @@
 				{#if $currentTab == 'enemySets' && $currentEm !== null}
 					{#key $currentEm.Id}
 						<EmPopup bind:tab={emTab} em={$currentEm} on:close={() => ($currentEm = null)} />
+					{/key}
+				{/if}
+				{#if $currentTab == 'zones' && $currentArea !== null}
+					{#key $currentArea.index}
+						<AreaPopup area={$currentArea} on:close={() => ($currentArea = null)} />
 					{/key}
 				{/if}
 				{#if ($currentTab == 'tasks' || $currentTab == 'flags' || $currentTab == 'talkScripts') && $currentTask !== null}

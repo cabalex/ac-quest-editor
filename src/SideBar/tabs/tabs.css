@@ -1,35 +1,35 @@
 .tabSidebar {
-    position: absolute;
-    z-index: 5;
-    left: 221px;
-    top: 0;
-    padding: 10px;
-    height: calc(100% - 20px);
-    border-right: 1px solid #444;
-    background-color: #333;
-    width: 500px;
+	position: absolute;
+	z-index: 5;
+	left: 221px;
+	top: 0;
+	padding: 5px;
+	height: calc(100% - 10px);
+	border-right: 1px solid #444;
+	background-color: #333;
+	width: 400px;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow-y: auto;
 }
 hr {
-    width: calc(100% - 20px);
-    border-color: #666;
-    border-style: solid;
+	width: calc(100% - 20px);
+	border-color: #666;
+	border-style: solid;
 }
 h2.sectionHeader {
-    width: calc(100% - 20px);
-    text-align: left;
-    font-size: 0.9em;
-    font-weight: bold;
-    color: #999;
-    margin: 5px;
-    margin-top: 15px;
-    margin-bottom: 0;
-    text-transform: uppercase;
+	width: calc(100% - 20px);
+	text-align: left;
+	font-size: 0.9em;
+	font-weight: bold;
+	color: #999;
+	margin: 5px;
+	margin-top: 15px;
+	margin-bottom: 0;
+	text-transform: uppercase;
 }
 .tabSidebar h2.sectionHeader {
-    color: #ccc;
+	color: #ccc;
 }

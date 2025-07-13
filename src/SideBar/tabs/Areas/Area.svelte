@@ -1,134 +1,127 @@
 <script lang="ts">
-    import { IconCaretRightFilled, IconMapPin, IconTrash } from "@tabler/icons-svelte";
-    import type { Area } from "../../../_lib/types/QuestData";
-    import BoolInput from "../../../assets/BoolInput.svelte";
-    import { slide } from "svelte/transition";
-    import { cubicInOut } from "svelte/easing";
-    import { createEventDispatcher } from "svelte";
-    import NumberInput from "../../../assets/NumberInput.svelte";
-    import VectorInput from "../../../assets/VectorInput.svelte";
-    
-    export let area: Area;
-    export let i: number;
+	import { IconCaretRightFilled, IconMapPin, IconTrash } from '@tabler/icons-svelte';
+	import type { Area } from '../../../_lib/types/QuestData';
+	import BoolInput from '../../../assets/BoolInput.svelte';
+	import { slide } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
+	import { createEventDispatcher } from 'svelte';
+	import NumberInput from '../../../assets/NumberInput.svelte';
+	import VectorInput from '../../../assets/VectorInput.svelte';
+	import { currentArea } from '../../../store';
 
-    let expanded = false;
+	export let area: Area;
+	export let i: number;
 
-    let isSphere = area.type === 2;
-    $: area.type = isSphere ? 2 : 1;
+	let expanded = false;
 
-    const dispatch = createEventDispatcher();
+	let isSphere = area.type === 2;
+	$: area.type = isSphere ? 2 : 1;
 
-    function confirmDelete() {
-        if (confirm(`Are you sure you want to delete Area ${area.index}? This cannot be undone.`)) {
-            dispatch("delete", area);
-        }
-    }
+	const dispatch = createEventDispatcher();
+
+	function confirmDelete() {
+		if (confirm(`Are you sure you want to delete Area ${area.index}? This cannot be undone.`)) {
+			dispatch('delete', area);
+		}
+	}
+
+	function focusArea() {
+		if ($currentArea === area) {
+			$currentArea = null;
+			return;
+		}
+		$currentArea = area;
+	}
 </script>
 
 <div
-    class="area"
-    class:open={expanded}
-    transition:slide={{duration: 100, easing: cubicInOut}}
+	class="area"
+	class:open={expanded}
+	class:active={$currentArea === area}
+	role="button"
+	tabindex="0"
+	on:click={focusArea}
+	transition:slide={{ duration: 100, easing: cubicInOut }}
 >
-    <header>
-        <button class="expand" class:active={expanded} on:click={(e) => { expanded = !expanded; e.stopPropagation(); }}>
-            <IconCaretRightFilled />
-        </button>
-        <IconMapPin />
-        <div class="text">
-            <h3>Area {area.index}</h3>
-            <span>{isSphere ? "Sphere" : "Box"}</span>
-        </div>
-    </header>
-    {#if expanded}
-    <div class="content" transition:slide={{axis: 'y', duration: 100, easing: cubicInOut}}>
-        <NumberInput
-            label="Area ID"
-            bind:value={area.index}
-        />
-        <BoolInput
-            label="Spherical area"
-            bind:value={isSphere}
-        />
-        <div class="nested">
-            <VectorInput
-                label="Center"
-                bind:value={area.center}
-            />
-            <NumberInput
-                label="Height"
-                bind:value={area.height}
-            />
-            <hr />
-            {#if isSphere}
-            <NumberInput
-                label="Radius"
-                bind:value={area.radius}
-            />
-            {:else}
-            <VectorInput
-                label="Point 1"
-                bind:value={area.points[0]}
-            />
-            <hr />
-            <VectorInput
-                label="Point 2"
-                bind:value={area.points[1]}
-            />
-            <hr />
-            <VectorInput
-                label="Point 3"
-                bind:value={area.points[2]}
-            />
-            <hr />
-            <VectorInput
-                label="Point 4"
-                bind:value={area.points[3]}
-            />
-            {/if}
-            <BoolInput
-                label="Debug display"
-                description="Used in development. Does nothing now."
-                bind:value={area.debugDisplay}
-            />
-        </div>
-        <button class="deleteBtn" on:click={confirmDelete}>
-            <IconTrash />
-            Delete Area
-        </button>
-    </div>
-    {/if}
+	<header>
+		<button
+			class="expand"
+			class:active={expanded}
+			on:click={(e) => {
+				expanded = !expanded;
+				e.stopPropagation();
+			}}
+		>
+			<IconCaretRightFilled />
+		</button>
+		<IconMapPin />
+		<div class="text">
+			<h3>{isSphere ? 'Sphere' : 'Box'} {area.index}</h3>
+		</div>
+	</header>
+	{#if expanded}
+		<div class="content" transition:slide={{ axis: 'y', duration: 100, easing: cubicInOut }}>
+			<NumberInput label="Area ID" bind:value={area.index} />
+			<BoolInput label="Spherical area" bind:value={isSphere} />
+			<div class="nested">
+				<VectorInput label="Center" bind:value={area.center} />
+				<NumberInput label="Height" bind:value={area.height} />
+				<hr />
+				{#if isSphere}
+					<NumberInput label="Radius" bind:value={area.radius} />
+				{:else}
+					<VectorInput label="Point 1" bind:value={area.points[0]} />
+					<hr />
+					<VectorInput label="Point 2" bind:value={area.points[1]} />
+					<hr />
+					<VectorInput label="Point 3" bind:value={area.points[2]} />
+					<hr />
+					<VectorInput label="Point 4" bind:value={area.points[3]} />
+				{/if}
+				<BoolInput
+					label="Debug display"
+					description="Used in development. Does nothing now."
+					bind:value={area.debugDisplay}
+				/>
+			</div>
+			<button class="deleteBtn" on:click={confirmDelete}>
+				<IconTrash />
+				Delete Area
+			</button>
+		</div>
+	{/if}
 </div>
 
 <style>
-    header {
-        transition: 0.1s ease-in-out;
-        border-radius: 10px 10px;
-    }
-    .content {
-        border-top: 1px solid #333;
-    }
-    .area {
-        width: calc(100% - 10px);
-        background-color: #444;
-        margin: 5px;
-        border-radius: 10px;
-    }
-    .area.open header {
-        border-radius: 10px 10px 0 0;
-    }
-    .text > * {
-        margin: 0;
-    }
-    button.expand {
-        padding: 5px;
-        border-radius: 100%;
-        transition: transform 0.1s;
-    }
-    button.expand.active {
-        transform: rotate(90deg);
-    }
-    button.deleteBtn {
-        border-radius: 0 0 10px 10px;
-    }
+	header {
+		transition: 0.1s ease-in-out;
+		border-radius: 10px 10px;
+	}
+	.content {
+		border-top: 1px solid #333;
+	}
+	.area {
+		width: calc(100% - 10px);
+		background-color: #555;
+		margin: 5px;
+		border-radius: 10px;
+	}
+	.area.open header {
+		border-radius: 10px 10px 0 0;
+	}
+	.text > * {
+		margin: 0;
+	}
+	button.expand {
+		padding: 5px;
+		border-radius: 100%;
+		transition: transform 0.1s;
+	}
+	button.expand.active {
+		transform: rotate(90deg);
+	}
+	button.deleteBtn {
+		border-radius: 0 0 10px 10px;
+		border-top: 1px solid #444;
+	}
 </style>
