@@ -181,9 +181,10 @@
 						{script.objId}
 						<span
 							style="color: white; transform: rotate(5deg)"
-							title="Can't find this object in this quest. Was it deleted?">
-                            <IconHelp />
-                        </span>
+							title="Can't find this object in this quest. Was it deleted?"
+						>
+							<IconHelp />
+						</span>
 					</h3>
 				{/if}
 				<span>{script.questId} - SetType {script.setType}</span>
@@ -221,32 +222,40 @@
 				<option value="2">Speech bubble</option>
 			</SelectNumberInput>
 			{#if script.triggerType !== 1}
-				<SelectStringInput
-					value={`${script.objId.toLowerCase()}-${script.setType}`}
-					label="Object to reference"
-					on:change={changeEmReference}
-				>
-					{#each Object.keys(emDropdown) as set}
-						<optgroup label={set}>
-							{#each emDropdown[set] as em, i}
-								<option data-index={i} value={em[0]}>{em[1]}</option>
-							{/each}
-						</optgroup>
-					{/each}
-				</SelectStringInput>
-				{#if emReference}
-					<h2 class="sectionHeader">Jump to object</h2>
-					<button
-						class="referencedTask"
-						style="margin: 10px"
-						on:click={() => {
-							$currentEm = (emReference || [null, null])[1];
-							$currentTab = 'enemySets';
-						}}
+				{#if script.questId === 'qffff'}
+					<SelectStringInput
+						value={`${script.objId.toLowerCase()}-${script.setType}`}
+						label="Object to reference"
+						on:change={changeEmReference}
 					>
-						<IconUser />
-						<span translate="yes">{emReference[0]}</span>
-					</button>
+						{#each Object.keys(emDropdown) as set}
+							<optgroup label={set}>
+								{#each emDropdown[set] as em, i}
+									<option data-index={i} value={em[0]}>{em[1]}</option>
+								{/each}
+							</optgroup>
+						{/each}
+					</SelectStringInput>
+					{#if emReference}
+						<h2 class="sectionHeader">Jump to object</h2>
+						<button
+							class="referencedTask"
+							style="margin: 10px"
+							on:click={() => {
+								$currentEm = (emReference || [null, null])[1];
+								$currentTab = 'enemySets';
+							}}
+						>
+							<IconUser />
+							<span translate="yes">{emReference[0]}</span>
+						</button>
+					{/if}
+				{:else}
+					<TextInput
+						label="Object ID"
+						description="This name should match an entity of SetType {script.setType} in quest {script.questId}."
+						bind:value={script.objId}
+					/>
 				{/if}
 			{:else}
 				<TextInput
@@ -255,7 +264,11 @@
 					bind:value={script.objId}
 				/>
 			{/if}
-			<TextInput label="Quest ID" description="Defaults to qffff." bind:value={script.questId} />
+			<TextInput
+				label="Quest ID"
+				description="Default qffff (in this quest)."
+				bind:value={script.questId}
+			/>
 			<button class="deleteBtn" on:click={confirmDelete}>
 				<IconTrash />
 				Delete Talk Script

@@ -408,10 +408,10 @@ export const ifBlocks = [
 		trueFalse('IFIsCombatBarrier', 'inside', 'outside')
 	]),
 	ifDefine('if-27', 'If fade transition is %1 (type %2)', [
-		trueFalse('IFbCheck', 'active', 'inactive'),
+		trueFalse('bCheck', 'active', 'inactive'),
 		{
 			type: 'field_number',
-			name: 'IFType',
+			name: 'Type',
 			value: 0,
 			min: 0
 		}
@@ -845,6 +845,7 @@ export const execBlocks = [
 		}
 	]),
 
+	execDefine('exec-27', 'Load something (TODO: RESEARCH)', []),
 	execDefine('exec-28', 'After Event %1, SubQuestJump to Phase %2 of Quest %3 (type %4)', [
 		{
 			type: 'field_input',
@@ -1185,6 +1186,7 @@ export const execBlocks = [
 		}
 	]),
 	execDefine('exec-55', 'UNKNOWN', []),
+	execDefine('exec-56', 'UNKNOWN', []),
 
 	execDefine('exec-59', 'Stop all subtitles', []),
 	execDefine('exec-60', 'Force costume change to %1', [
