@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { Script } from '../../_lib/types/TalkScript';
-	import { IconFilter, IconPlus, IconTrash } from '@tabler/icons-svelte';
-	import StateCommand from '../RawEditor/StateCommand.svelte';
-	import { StateCommand as StateCommandObject } from '../../_lib/types/TalkScript';
-	import TreeCommand from './TreeCommand.svelte';
+	import { IconPlus } from '@tabler/icons-svelte';
+	import { StateInfo } from '../../_lib/types/TalkScript';
 	import StateBlock from './StateBlock.svelte';
 
 	export let script: Script;
@@ -22,13 +20,32 @@
 		</div>
 	{/each}
 </div>
+<button
+	class="addBtn floating"
+	on:click={() => (script.stateInfos = [...script.stateInfos, new StateInfo(['none'], 1, 1, [])])}
+>
+	<IconPlus />
+	Add State
+</button>
 
 <style>
+	.canvas {
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+	}
 	.state-row {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
 		justify-content: flex-start;
 		gap: 10px;
+	}
+	.addBtn.floating {
+		width: fit-content;
+		position: absolute;
+		bottom: 20px;
+		right: 20px;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 	}
 </style>

@@ -1,0 +1,84 @@
+.tree-command {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid #555;
+}
+.tree-command .input {
+	flex-direction: column;
+	align-items: flex-start;
+}
+.command-body {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	overflow: hidden;
+}
+.command-body.choice .row textarea,
+.command-body.anser .row textarea {
+	height: 1.5em;
+	min-height: 1.5em;
+}
+.command-body.choice .row svg,
+.command-body.anser .row svg {
+	margin-left: 30%;
+}
+.command-body.jumper .row {
+	border-left: 3px solid var(--primary-500);
+	padding-left: 2px;
+}
+.command-body.anser .row {
+	border-left: 3px solid var(--secondary);
+	padding-left: 2px;
+}
+.row {
+	padding: 5px;
+	display: flex;
+	align-items: flex-start;
+	white-space: nowrap;
+	gap: 10px;
+	line-height: 2;
+	position: relative;
+}
+
+.row:has(svg):has(textarea) svg,
+.row:has(svg):has(input) svg,
+.row:has(svg):has(select) svg {
+	margin-top: 5px;
+}
+.row + .row {
+	padding-top: 0;
+}
+.row:not(:has(svg:first-child)) {
+	padding-left: 37px !important;
+}
+.row input,
+.row textarea,
+.row select {
+	width: 100%;
+	font-size: unset;
+	font-family: unset;
+	padding: 4px;
+	border-radius: 0;
+	resize: none;
+}
+.row textarea {
+	min-height: 75px;
+}
+textarea.above-head {
+	text-align: center;
+	min-height: 3em;
+	height: 3em;
+	margin-bottom: 10px;
+	position: relative;
+}
+.row:has(textarea.above-head):before {
+	content: '';
+	background-color: #555;
+	width: 20px;
+	height: 10px;
+	position: absolute;
+	bottom: 5px;
+	left: calc(50% + 24px);
+	clip-path: polygon(0 0, 100% 0, 50% 100%);
+	transform: translateX(-50%);
+}

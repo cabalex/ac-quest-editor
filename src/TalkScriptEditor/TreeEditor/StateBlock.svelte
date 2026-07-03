@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Script } from '../../_lib/types/TalkScript';
-	import { IconFilter, IconPlus, IconTrash } from '@tabler/icons-svelte';
+	import { IconFilter, IconFilterPlus, IconPlus, IconTrash } from '@tabler/icons-svelte';
 	import { StateCommand as StateCommandObject } from '../../_lib/types/TalkScript';
-	import TreeCommand from './TreeCommand.svelte';
+	import TreeCommand from './TreeCommand/TreeCommand.svelte';
 
 	export let script: Script;
 	export let stateInfo: Script['stateInfos'][number];
@@ -27,6 +27,13 @@
 			(priority
 			<input bind:value={stateInfo.priority} />)
 		</span>
+		<div style="flex-grow: 1" />
+		<button
+			class="addBtn addFilter"
+			on:click={() => (stateInfo.triggers = [...stateInfo.triggers, ''])}
+		>
+			<IconFilterPlus />
+		</button>
 	</h2>
 	{#each stateInfo.commands as command}
 		<TreeCommand
@@ -47,16 +54,19 @@
 
 <style>
 	.state-block {
-		border: 1px solid #555;
+		border: 1px solid #aaa;
 		border-radius: 5px;
 		background-color: #222;
-		display: flex;
+		display: inline-flex;
 		flex-direction: column;
 		max-width: 400px;
 		overflow: hidden;
 		margin-bottom: 10px;
 	}
 	.state-block h2 {
+		display: flex;
+		align-items: center;
+		gap: 5px;
 		margin: 0;
 		padding: 5px;
 		background-color: #666;
@@ -67,6 +77,12 @@
 		border: none;
 		font-size: unset;
 		background-color: #444;
+	}
+	.addFilter {
+		width: fit-content;
+		padding: 5px;
+		margin: 0;
+		border-radius: 5px !important;
 	}
 	.trigger {
 		display: flex;

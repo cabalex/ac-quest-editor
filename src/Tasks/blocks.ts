@@ -144,15 +144,15 @@ function ifDefine(type: string, msg: string, args: any[], extensions?: string[])
 export const ifBlocks = [
 	ifDefine(
 		'if-1',
-		'If Player in Area %1 of GroupNo %2 (Check: %3, Multiple: %4)',
+		'If Player in Area Group %1, Index %2 (Check: %3, Multiple: %4)',
 		[
 			{
 				type: 'input_dummy',
-				name: 'IFIndexNo_dummy'
+				name: 'IFGroupNo_dummy'
 			},
 			{
 				type: 'field_number',
-				name: 'IFGroupNo',
+				name: 'IFIndexNo',
 				value: 0,
 				min: 0
 			},
@@ -1323,7 +1323,7 @@ attemptRegisterExtension('task', function () {
 	this.setInputsInline(true);
 });
 attemptRegisterExtension('zone', function () {
-	this.getInput('IFIndexNo_dummy').appendField(
+	this.getInput('IFGroupNo_dummy').appendField(
 		new Blockly.FieldDropdown(() => {
 			let ses = get(session);
 			if (!ses) return [];
@@ -1334,7 +1334,7 @@ attemptRegisterExtension('zone', function () {
 				zone.index.toString()
 			]);
 		}),
-		'IFIndexNo'
+		'IFGroupNo'
 	);
 	this.setInputsInline(true);
 });

@@ -89,7 +89,7 @@ button.deleteBtn {
   color: var(--danger);
   transition: 0.2s;
 }
-button.deleteBtn:hover {
+button.deleteBtn:hover, button.deleteBtn.transparentBtn:hover {
   background-color: var(--danger);
   color: white;
 }
