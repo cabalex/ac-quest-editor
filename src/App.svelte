@@ -18,6 +18,7 @@
 	import Randomizer from './Randomizer/Randomizer.svelte';
 	import TextEditor from './TextEditor/TextEditor.svelte';
 	import Quest from './_lib/Quest';
+	import PkzEditor from './PKZEditor/PKZEditor.svelte';
 
 	$: {
 		if (!($session instanceof Quest)) {
@@ -43,6 +44,8 @@
 		<GettingStarted hidden={$session !== null} />
 		{#if $session === 'text'}
 			<TextEditor />
+		{:else if $session === 'pkz'}
+			<PkzEditor />
 		{:else if $session instanceof Quest}
 			{#key $session.id}
 				<SideBar />

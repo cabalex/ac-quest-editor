@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { IconPlus, IconCheck, IconPackages, IconLetterCase } from '@tabler/icons-svelte';
+    import { IconPlus, IconCheck, IconPackages, IconLetterCase, IconFileZip } from '@tabler/icons-svelte';
     import { session, sessions, textCache } from '../store';
     import Loading from '../assets/Loading.svelte';
     import Icon from './Icon.svelte';
@@ -102,6 +102,15 @@
     <div style="flex-grow: 1" />
     <footer>
         <hr />
+        <button
+            class="session"
+            title="Modify PKZ packages"
+            style="margin-bottom: 5px"
+            class:active={$session === "pkz"}
+            on:click={() => $session = "pkz"}
+        >
+            <IconFileZip />
+        </button>
         <button
             class="session"
             title="Manage in-game text"

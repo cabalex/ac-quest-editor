@@ -6,7 +6,7 @@ import type { Script } from './_lib/types/TalkScript';
 import type { AreaGroup } from './_lib/types/QuestData';
 
 export const sessions: Writable<Quest[]> = writable([]);
-export const session: Writable<Quest | 'text' | null> = writable(null);
+export const session: Writable<Quest | 'text' | 'pkz' | null> = writable(null);
 
 export const currentTab: Writable<null | string> = writable(null);
 export const showAreasOnMap: Writable<boolean> = writable(true);
