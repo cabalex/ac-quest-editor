@@ -12,6 +12,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@tsconfig/svelte": "^5.0.2",
+    "@types/three": "^0.170.0",
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-svelte": "^2.46.1",
@@ -21,18 +22,19 @@
     "svelte-check": "^3.6.3",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
-    "vite": "^5.1.0"
+    "vite": "^5.1.0",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "@blockly/theme-dark": "^6.0.5",
     "@mit-app-inventor/blockly-plugin-workspace-multiselect": "^0.1.11",
     "@oneidentity/zstd-js": "^1.0.3",
-    "@panzoom/panzoom": "^4.5.1",
     "@tabler/icons-svelte": "^2.47.0",
     "blockly": "^10.4.1",
     "encoding-japanese": "^2.0.0",
     "fflate": "^0.8.2",
     "i": "^0.3.7",
-    "npm": "^10.5.0"
+    "npm": "^10.5.0",
+    "three": "^0.170.0"
   }
 }

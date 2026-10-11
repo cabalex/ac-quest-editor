@@ -9,20 +9,14 @@
 </script>
 
 <script lang="ts">
-	import Panzoom, { type PanzoomObject } from '@panzoom/panzoom';
-	import { onDestroy, onMount } from 'svelte';
 	import { questAreaLookup } from '../_lib/lookupTable';
-	import { currentTab, currentEm, currentArea, session, showAreasOnMap } from '../store';
-	import { Em } from '../_lib/types/EnemySet';
-	import MapEm from './MapEm.svelte';
+	import { currentTab, currentEm, session } from '../store';
+	import Map3D from './Map3D.svelte';
 	import Quest from '../_lib/Quest';
-	import type { AreaGroup } from '../_lib/types/QuestData';
 
-	let mapElem: HTMLDivElement;
-
-	let map = questAreaLookup($session?.id || '0') || 'r0';
-	let floor = 0;
-	let panzoom: PanzoomObject;
+	let map = questAreaLookup($session instanceof Quest ? $session.id : '0') || 'r0';
+	// Selected floor index, or -1 for all floors.
+	let floor = -1;
 
 	const MAPS: { [key: string]: { name: string; bottom: number; top: number }[] } = {
 		r100: [
@@ -91,136 +85,13 @@
 		if ($session instanceof Quest && $session.id !== oldId) {
 			oldId = $session.id;
 			map = questAreaLookup($session.id) || 'r0';
-			floor = lowestActiveFloor();
+			floor = -1;
 		}
-	}
-
-	function lowestActiveFloor() {
-		if (Object.keys(MAPS).includes(map) && $session instanceof Quest) {
-			const minimumHeight = Math.min(
-				...($session?.enemySet.sets.map((set) => set.ems.map((em) => em.Trans.y)).flat() ?? [-999])
-			);
-			for (let i = 0; i < MAPS[map].length; i++) {
-				if (MAPS[map][i].bottom <= minimumHeight && MAPS[map][i].top >= minimumHeight) {
-					return i;
-				}
-			}
-		}
-		return 0;
-	}
-
-	onMount(() => {
-		panzoom = Panzoom(mapElem, {
-			maxScale: 10
-		});
-		mapElem.addEventListener('wheel', panzoom.zoomWithWheel);
-
-		// Must use timeout to ensure these are set.
-		setTimeout(() => {
-			panzoom.reset();
-			panzoom.zoom(2);
-			panzoom.pan(-250, -750);
-		}, 0);
-	});
-
-	onDestroy(() => {
-		mapElem?.remove();
-		panzoom?.destroy();
-	});
-
-	let lastOpen = false;
-	function toggleOpen(tab: string | null) {
-		if (!panzoom || (tab === null && !lastOpen) || (tab !== null && lastOpen)) return;
-		let zoom = panzoom.getScale();
-		if ($currentTab === null) {
-			panzoom?.pan(-110 / zoom, 0, { animate: true, relative: true });
-			lastOpen = false;
-		} else {
-			panzoom?.pan(110 / zoom, 0, { animate: true, relative: true });
-			lastOpen = true;
-		}
-	}
-
-	let panToEmEnabled = true;
-	function panToEm(em: Em) {
-		if (!panToEmEnabled || !panzoom) return;
-		if (Object.keys(MAPS).includes(map)) {
-			let floorToChange = MAPS[map].findIndex((x) => x.bottom <= em.Trans.y && x.top >= em.Trans.y);
-			if (floorToChange !== -1) floor = floorToChange;
-		}
-		console.log(toMap(em.Trans.z) / 4400, toMap(-em.Trans.x) / 4400);
-		panzoom.zoom(1);
-		centerOn(toMap(-em.Trans.z) / 4400, toMap(em.Trans.x) / 4400);
-		//panzoom.zoomIn()
-	}
-
-	// The percent values for x and y are expected in the range of 0 - 1. ie 50% = 0.5
-	function centerOn(xPercent: number, yPercent: number) {
-		if (!mapElem || !mapElem.parentElement) return;
-		const scale = panzoom.getScale();
-		const realWidth = mapElem.clientWidth;
-		const realHeight = mapElem.clientHeight;
-
-		const scaledWidth = realWidth * scale;
-
-		const diffHorizontal = (scaledWidth - realWidth) / 2;
-
-		const viewableAreaWidth = mapElem.parentElement.clientWidth;
-		const viewableAreaHeight = mapElem.parentElement.clientHeight;
-		console.log(mapElem.parentElement);
-
-		// x axis calculations
-		const maxX = diffHorizontal / scale;
-		// how many pixels from the left the target is
-		const xPos = realWidth * xPercent;
-		// maxX is on the left and the value gets lower moving left to right
-		// this finds the position where the viewable area's left edge would run through the target's center
-		const xLeftEdge = maxX - xPos;
-		// amount to shift the scene to compensate for the scale and the viewable area width
-		const viewableHorizontalShift = viewableAreaWidth / 2 / scale;
-		// again the x-axis values get larger to the left so we need to add the viewableHorizontalShift so that it is centered
-		const newX = viewableHorizontalShift + xLeftEdge + 500;
-
-		// y axis calculation
-		const newY = viewableAreaHeight / 2 - realHeight * yPercent;
-
-		panzoom.pan(newX, newY, { duration: 200 });
-	}
-
-	$: if ($currentEm && !cachedEm) panToEm($currentEm);
-
-	const toMap = (coord: number) => 2200 + coord * 2;
-
-	$: toggleOpen($currentTab);
-	let cachedEm: Em | null = null;
-	let cachedArea: AreaGroup | null = null;
-
-	let x = 0;
-	let y = 0;
-	function calculateMouseCoords(e: MouseEvent) {
-		let scale = panzoom.getScale();
-		let pan = panzoom.getPan();
-		//console.log(pan.x, pan.y)
-		x = (e.clientX - (window.innerWidth - 1300) / 2) / scale + pan.x;
-		y = e.clientY / scale - pan.y;
-	}
-
-	function layerFilter(y: number) {
-		if (!MAPS[map] || !MAPS[map][floor]) return true;
-		return MAPS[map][floor].top >= y && MAPS[map][floor].bottom <= y;
 	}
 </script>
 
-<!-- Key here to update map on writable change -->
 <div class="mapContainer" class:full={$currentTab === null}>
-	<select
-		bind:value={map}
-		on:change={() =>
-			setTimeout(() => {
-				floor = lowestActiveFloor();
-			}, 0)}
-		class="mapSelector"
-	>
+	<select bind:value={map} on:change={() => (floor = -1)} class="mapSelector">
 		<option value="r100">Zone 36 Central City</option>
 		<option value="r200">Zone 33 Harmony Square</option>
 		<option value="r240">Zone 33 Ark Transport</option>
@@ -239,98 +110,21 @@
 	</select>
 	{#if MAPS[map] && MAPS[map].length > 1}
 		<select class="floorSelector" bind:value={floor}>
+			<option value={-1}>All floors</option>
 			{#each MAPS[map] as floorData, i}
 				<option value={i}>{floorData.name}</option>
 			{/each}
 		</select>
 	{/if}
-	<div
-		class="map"
-		bind:this={mapElem}
-		role="img"
-		on:mousemove={calculateMouseCoords}
-		on:panzoomstart={() => {
-			cachedEm = $currentEm;
-			cachedArea = $currentArea;
-			$currentEm = null;
-			$currentArea = null;
+	<Map3D
+		{map}
+		{floor}
+		floors={MAPS[map]}
+		on:select={(e) => {
+			$currentTab = 'enemySets';
+			$currentEm = e.detail;
 		}}
-		on:panzoomend={() => {
-			panToEmEnabled = false;
-			$currentEm = cachedEm;
-			$currentArea = cachedArea;
-			cachedEm = null;
-			cachedArea = null;
-			setTimeout(() => (panToEmEnabled = true), 0);
-		}}
-	>
-		<img src={`./maps/${map}/${floor}.svg`} alt="Map" />
-		<div class="mapsBelow">
-			{#each new Array(floor) as _, i}
-				<img src={`./maps/${map}/${i}.svg`} alt="Map below" />
-			{/each}
-		</div>
-		{#if $session instanceof Quest}
-			{#key $writableMap}
-				{#each $session?.enemySet.sets || [] as set}
-					{#each set.ems.filter((x) => layerFilter(x.Trans.y)) as em}
-						<MapEm
-							{em}
-							{set}
-							{cachedEm}
-							on:click={() => {
-								$currentTab = 'enemySets';
-								$currentEm = em;
-								panToEm(em);
-							}}
-						/>
-					{/each}
-				{/each}
-				{#if $showAreasOnMap}
-					{#each $session?.questData.areas || [] as areaGroup}
-						<svg
-							class="areas"
-							class:active={$currentArea === areaGroup || cachedArea === areaGroup}
-							height="4400"
-							width="4400"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							{#each areaGroup.groups.filter((x) => layerFilter(x.center.y)) as area}
-								{#if area.type === 1}
-									<polygon
-										points={area.points
-											.map((coord) => `${toMap(-coord.z)},${toMap(coord.x)}`)
-											.join(' ')}
-										style={`fill: hsl(${areaGroup.index * 10}, 50%, 50%); opacity: 0.4`}
-									/>
-								{:else}
-									<circle
-										cx={toMap(-area.center.z)}
-										cy={toMap(area.center.x)}
-										r={area.radius * 2}
-										style="fill: hsl({areaGroup.index * 10}, 50%, 50%); opacity: 0.4"
-									/>
-								{/if}
-								<text
-									x={toMap(-area.center.z)}
-									y={toMap(area.center.x)}
-									fill="hsl({areaGroup.index * 10}, 50%, 10%)"
-									font-size="10"
-									width="{area.type === 1
-										? (area.points[0].z - area.points[1].z) * 2
-										: area.radius * 4}px"
-									text-anchor="middle"
-									alignment-baseline="middle"
-								>
-									{areaGroup.name}
-								</text>
-							{/each}
-						</svg>
-					{/each}
-				{/if}
-			{/key}
-		{/if}
-	</div>
+	/>
 </div>
 
 <style>
@@ -341,23 +135,6 @@
 		height: 100%;
 		width: 100%;
 		z-index: 1;
-	}
-	.mapContainer.full {
-		width: 100%;
-	}
-	.map {
-		position: relative;
-		height: 4400px;
-		width: 4400px;
-	}
-	.map img {
-		height: 4400px;
-		width: 4400px;
-	}
-	.map svg.areas {
-		position: absolute;
-		top: 0;
-		left: 0;
 	}
 	.mapSelector,
 	.floorSelector {
@@ -370,25 +147,5 @@
 	}
 	.floorSelector {
 		top: 40px;
-	}
-	.mapsBelow {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 4400px;
-		width: 4400px;
-		opacity: 0.2;
-		z-index: -1;
-		background-color: #000;
-	}
-	.mapsBelow > img {
-		position: absolute;
-		top: 0;
-		left: 0;
-	}
-	.areas.active {
-		stroke: hsl(0, 0%, 100%);
-		stroke-width: 2;
-		z-index: 10;
 	}
 </style>
